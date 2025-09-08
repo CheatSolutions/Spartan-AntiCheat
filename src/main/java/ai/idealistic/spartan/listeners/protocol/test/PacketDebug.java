@@ -1,4 +1,4 @@
-package ai.idealistic.spartan.listeners.protocol;
+package ai.idealistic.spartan.listeners.protocol.test;
 
 import ai.idealistic.spartan.Register;
 import com.comphenix.protocol.PacketType;

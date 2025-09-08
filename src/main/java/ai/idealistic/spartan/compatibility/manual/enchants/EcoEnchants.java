@@ -3,7 +3,7 @@ package ai.idealistic.spartan.compatibility.manual.enchants;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.compatibility.Compatibility;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
-import com.willfp.ecoenchants.enchants.EcoEnchant;
+import com.willfp.ecoenchants.enchant.EcoEnchant;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;

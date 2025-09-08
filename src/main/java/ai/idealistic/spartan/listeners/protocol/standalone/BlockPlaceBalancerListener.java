@@ -3,6 +3,8 @@ package ai.idealistic.spartan.listeners.protocol.standalone;
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.compatibility.necessary.protocollib.ProtocolLib;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
+import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import com.comphenix.protocol.PacketType;
@@ -32,7 +34,12 @@ public class BlockPlaceBalancerListener extends PacketAdapter {
     public void onPacketReceiving(PacketEvent event) {
         Player player = event.getPlayer();
         PlayerProtocol protocol = PluginBase.getProtocol(player);
-        protocol.timerBalancer.addBalance(50);
+
+        if (!Config.settings.getBoolean("Important.bedrock_on_protocollib")
+                && protocol.isBedrockPlayer()) {
+            return;
+        }
+        CheckThread.run(() -> protocol.timerBalancer.addBalance(50));
     }
 
     private static PacketType[] resolvePacketTypes() {

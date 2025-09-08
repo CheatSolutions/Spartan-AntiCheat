@@ -2,6 +2,7 @@ package ai.idealistic.spartan.listeners.bukkit;
 
 import ai.idealistic.spartan.abstraction.event.CPlayerRiptideEvent;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -16,12 +17,12 @@ public class TridentEvent implements Listener {
     @EventHandler
     private void Event(PlayerRiptideEvent e) {
         PlayerProtocol protocol = PluginBase.getProtocol(e.getPlayer());
-        event(
+        CheckThread.run(() -> event(
                 new CPlayerRiptideEvent(
                         protocol,
                         e.getItem(),
                         e.getPlayer().getVelocity()
-                ), false);
+                ), false));
     }
 
     public static void event(CPlayerRiptideEvent e, boolean packets) {

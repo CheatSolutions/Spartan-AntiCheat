@@ -18,7 +18,7 @@ public class MultiVersion {
 
     static {
         serverVersion = judge();
-        folia = Bukkit.getVersion().toLowerCase().contains("folia");
+        folia = folia();
     }
 
     public enum MCVersion {
@@ -109,4 +109,13 @@ public class MultiVersion {
         }
         return MCVersion.OTHER;
     }
+
+    private static boolean folia() {
+        try {
+            return Class.forName("io.papermc.paper.threadedregions.RegionizedServer") != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 }

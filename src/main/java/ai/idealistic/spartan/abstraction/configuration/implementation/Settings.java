@@ -2,7 +2,6 @@ package ai.idealistic.spartan.abstraction.configuration.implementation;
 
 import ai.idealistic.spartan.abstraction.configuration.ConfigurationBuilder;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
-import ai.idealistic.spartan.functionality.connection.PluginAddons;
 import ai.idealistic.spartan.functionality.moderation.DetectionNotifications;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 
@@ -14,8 +13,6 @@ public class Settings extends ConfigurationBuilder {
         super("settings");
     }
 
-    public static final String crossServerNotificationsName = "Important.server_name";
-
     @Override
     public void create() {
         addOption("Logs.log_file", true);
@@ -26,42 +23,25 @@ public class Settings extends ConfigurationBuilder {
         addOption("Notifications.awareness_notifications", true);
         addOption("Notifications.message_clickable_command", "/teleport {player}");
 
-        if (PluginAddons.isFreeEdition()) {
-            setOption(crossServerNotificationsName, PluginAddons.disabledInFreeEdition);
-        } else {
-            addOption(crossServerNotificationsName, "");
-        }
+        addOption("Important.server_name", "");
         addOption("Important.op_bypass", false);
 
+        addOption("Important.bedrock_on_protocollib", true);
         addOption("Important.bedrock_client_permission", false);
         addOption("Important.bedrock_player_prefix", ".");
         addOption("Important.enable_developer_api", true);
 
-        if (PluginAddons.isFreeEdition()) {
-            setOption("Important.enable_watermark", PluginAddons.disabledInFreeEdition);
-        } else {
-            addOption("Important.enable_watermark", true);
-        }
+        addOption("Important.enable_watermark", true);
         addOption("Important.enable_npc", false);
 
         addOption("Purchases.email_address", "");
         addOption("Purchases.patreon_full_name", "");
 
-        if (PluginAddons.isFreeEdition()) {
-            setOption("Detections.ground_teleport_on_detection", PluginAddons.disabledInFreeEdition);
-            setOption("Detections.damage_on_detection", PluginAddons.disabledInFreeEdition);
-        } else {
-            addOption("Detections.ground_teleport_on_detection", true);
-            addOption("Detections.damage_on_detection", false);
-        }
+        addOption("Detections.ground_teleport_on_detection", true);
+        addOption("Detections.damage_on_detection", false);
 
-        if (PluginAddons.isFreeEdition()) {
-            setOption("Discord.webhook_hex_color", PluginAddons.disabledInFreeEdition);
-            setOption("Discord.checks_webhook_url", PluginAddons.disabledInFreeEdition);
-        } else {
-            addOption("Discord.webhook_hex_color", "4caf50");
-            addOption("Discord.checks_webhook_url", "");
-        }
+        addOption("Discord.webhook_hex_color", "4caf50");
+        addOption("Discord.checks_webhook_url", "");
     }
 
     public void runOnLogin(PlayerProtocol p) {

@@ -3,7 +3,6 @@ package ai.idealistic.spartan;
 import ai.idealistic.spartan.functionality.command.CommandExecution;
 import ai.idealistic.spartan.functionality.command.CommandTab;
 import ai.idealistic.spartan.functionality.connection.JarVerification;
-import ai.idealistic.spartan.functionality.connection.Metrics;
 import ai.idealistic.spartan.functionality.moderation.AwarenessNotifications;
 import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
@@ -13,6 +12,7 @@ import ai.idealistic.spartan.listeners.bukkit.*;
 import ai.idealistic.spartan.listeners.bukkit.standalone.*;
 import ai.idealistic.spartan.utils.minecraft.entity.PlayerUtils;
 import ai.idealistic.spartan.utils.minecraft.server.ProxyUtils;
+import kireiko.dev.millennium.ml.ClientML;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
@@ -32,7 +32,7 @@ public class Register extends JavaPlugin {
 
     public void onEnable() {
         plugin = this;
-        new Metrics(this, 25438);
+        //new Metrics(this, 25438);
 
         if (MultiVersion.serverVersion == MultiVersion.MCVersion.OTHER) {
             AwarenessNotifications.forcefullySend(
@@ -42,6 +42,8 @@ public class Register extends JavaPlugin {
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
+
+        ClientML.run();
         if (!MultiVersion.folia) {
             JarVerification.run(this);
         }

@@ -4,6 +4,7 @@ import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.event.CPlayerRiptideEvent;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.functionality.concurrent.CheckThread;
+import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import ai.idealistic.spartan.listeners.bukkit.TridentEvent;
 import com.comphenix.protocol.PacketType;
@@ -11,7 +12,6 @@ import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
@@ -29,9 +29,10 @@ public class TridentListener extends PacketAdapter {
     @Override
     public void onPacketReceiving(PacketEvent event) {
         if (!event.isCancelled()) { // PlayerRiptideEvent does not implement cancellable
-            Player player = event.getPlayer();
-            PlayerProtocol protocol = PluginBase.getProtocol(player);
-            if (protocol.isBedrockPlayer()) {
+            PlayerProtocol protocol = PluginBase.getProtocol(event.getPlayer());
+
+            if (!Config.settings.getBoolean("Important.bedrock_on_protocollib")
+                    && protocol.isBedrockPlayer()) {
                 return;
             }
             ItemStack item = protocol.getInventory().getItemInMainHand();

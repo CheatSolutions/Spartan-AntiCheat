@@ -1,4 +1,4 @@
-package ai.idealistic.spartan.listeners.protocol.standalone;
+package ai.idealistic.spartan.functionality.connection;
 
 import ai.idealistic.spartan.functionality.server.TPS;
 import ai.idealistic.spartan.utils.java.OverflowMap;

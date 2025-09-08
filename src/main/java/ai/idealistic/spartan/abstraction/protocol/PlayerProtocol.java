@@ -3,7 +3,6 @@ package ai.idealistic.spartan.abstraction.protocol;
 import ai.idealistic.spartan.abstraction.check.Check;
 import ai.idealistic.spartan.abstraction.check.CheckEnums;
 import ai.idealistic.spartan.abstraction.check.CheckRunner;
-import ai.idealistic.spartan.abstraction.data.CheckBoundData;
 import ai.idealistic.spartan.abstraction.data.EnvironmentData;
 import ai.idealistic.spartan.abstraction.data.PacketWorld;
 import ai.idealistic.spartan.abstraction.data.TimerBalancer;
@@ -16,6 +15,7 @@ import ai.idealistic.spartan.abstraction.world.ServerLocation;
 import ai.idealistic.spartan.compatibility.Compatibility;
 import ai.idealistic.spartan.compatibility.necessary.BedrockCompatibility;
 import ai.idealistic.spartan.compatibility.necessary.protocollib.ProtocolLib;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
 import ai.idealistic.spartan.functionality.server.PluginBase;
@@ -32,6 +32,10 @@ import ai.idealistic.spartan.utils.minecraft.protocol.ProtocolTools;
 import ai.idealistic.spartan.utils.minecraft.server.PluginUtils;
 import ai.idealistic.spartan.utils.minecraft.world.BlockUtils;
 import ai.idealistic.spartan.utils.minecraft.world.GroundUtils;
+import kireiko.dev.millennium.math.CinematicComponent;
+import kireiko.dev.millennium.math.SensitivityProcessor;
+import kireiko.dev.millennium.math.Statistics;
+import kireiko.dev.millennium.types.EvictingList;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
@@ -101,7 +105,6 @@ public class PlayerProtocol {
     private Check.DataType dataType;
     private Set<AxisAlignedBB> axisMatrixCache;
     @Setter
-    private CheckBoundData checkBoundData;
     public final PacketWorld packetWorld;
     public PlayerTickEvent lastTickEvent;
     public short transactionId;
@@ -123,7 +126,10 @@ public class PlayerProtocol {
     private ComponentXZ componentXZ;
     private Vector clampVector;
     private final Map<PotionEffectType, ExtendedPotionEffect> potionEffects;
-    private boolean afk;
+    private boolean afk, cinematic;
+    private final List<Integer> sensitivity = new EvictingList<>(14);
+    private final SensitivityProcessor sensitivityProcessor = new SensitivityProcessor(this);
+    private final CinematicComponent cinematicComponent = new CinematicComponent(this);
     Entity[] nearbyEntities;
     final double[] maxNearbyEntitiesCoordinate;
     @Getter
@@ -165,7 +171,6 @@ public class PlayerProtocol {
         this.claimedVeloSpeed = new ConcurrentList<>();
         this.entityHandle = false;
         this.axisMatrixCache = new HashSet<>();
-        this.checkBoundData = null;
         this.pistonTick = false;
         this.lastTickEvent = null;
         this.transactionId = (short) -1939;
@@ -222,20 +227,25 @@ public class PlayerProtocol {
                     if (!MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_13)) {
                         protocol.setStoredPotionEffects();
                     }
-                    if (protocol.maxNearbyEntitiesCoordinate[0] > 0.0
+                    if (!MultiVersion.folia
+                            && (protocol.maxNearbyEntitiesCoordinate[0] > 0.0
                             || protocol.maxNearbyEntitiesCoordinate[1] > 0.0
-                            || protocol.maxNearbyEntitiesCoordinate[2] > 0.0) {
-                        protocol.nearbyEntities = protocol.bukkit().getNearbyEntities(
-                                protocol.maxNearbyEntitiesCoordinate[0],
-                                protocol.maxNearbyEntitiesCoordinate[1],
-                                protocol.maxNearbyEntitiesCoordinate[2]
-                        ).toArray(new Entity[0]);
+                            || protocol.maxNearbyEntitiesCoordinate[2] > 0.0)) {
+                        PluginBase.transferTask(
+                                () -> protocol.nearbyEntities = protocol.bukkit().getNearbyEntities(
+                                        protocol.maxNearbyEntitiesCoordinate[0],
+                                        protocol.maxNearbyEntitiesCoordinate[1],
+                                        protocol.maxNearbyEntitiesCoordinate[2]
+                                ).toArray(new Entity[0])
+                        );
                     }
-                    protocol.isFlying();
-                    protocol.isGliding();
-                    protocol.checkForAFK();
-                    protocol.executeRunners(false, null);
-                    protocol.schedulerFrom = protocol.getLocation();
+                    CheckThread.run(() -> {
+                        protocol.isFlying();
+                        protocol.isGliding();
+                        protocol.checkForAFK();
+                        protocol.executeRunners(false, null);
+                        protocol.schedulerFrom = protocol.getLocation();
+                    });
                 }
             }
         }, 1L, 1L);
@@ -254,9 +264,14 @@ public class PlayerProtocol {
     }
 
     public void executeRunners(Object cancelled, Object object) {
-        for (CheckRunner runner : this.getRunners()) {
-            runner.handle(cancelled, object);
-        }
+        PluginBase.runTask(
+                this,
+                () -> {
+                    for (CheckRunner runner : this.getRunners()) {
+                        runner.handle(cancelled, object);
+                    }
+                }
+        );
     }
 
     private void resetActiveCreationTime() {
@@ -452,7 +467,9 @@ public class PlayerProtocol {
     }
 
     public boolean packetsEnabled() {
-        return PluginBase.packetsEnabled() && !this.isBedrockPlayer();
+        return PluginBase.packetsEnabled()
+                && (Config.settings.getBoolean("Important.bedrock_on_protocollib")
+                || !this.isBedrockPlayer());
     }
 
     public boolean isBedrockPlayer() {
@@ -717,6 +734,9 @@ public class PlayerProtocol {
     }
 
     public List<Entity> getNearbyEntities(double radius) {
+        if (MultiVersion.folia) {
+            return new ArrayList<>(0);
+        }
         this.maxNearbyEntitiesCoordinate[0] = Math.max(radius, this.maxNearbyEntitiesCoordinate[0]);
         this.maxNearbyEntitiesCoordinate[1] = Math.max(radius, this.maxNearbyEntitiesCoordinate[1]);
         this.maxNearbyEntitiesCoordinate[2] = Math.max(radius, this.maxNearbyEntitiesCoordinate[2]);
@@ -758,10 +778,11 @@ public class PlayerProtocol {
     }
 
     public List<Entity> getNearbyEntities(double x, double y, double z) {
-        this.maxNearbyEntitiesCoordinate[0] = Math.max(x, this.maxNearbyEntitiesCoordinate[0]);
-        this.maxNearbyEntitiesCoordinate[1] = Math.max(y, this.maxNearbyEntitiesCoordinate[1]);
-        this.maxNearbyEntitiesCoordinate[2] = Math.max(z, this.maxNearbyEntitiesCoordinate[2]);
-
+        if (MultiVersion.folia) {
+            this.maxNearbyEntitiesCoordinate[0] = Math.max(x, this.maxNearbyEntitiesCoordinate[0]);
+            this.maxNearbyEntitiesCoordinate[1] = Math.max(y, this.maxNearbyEntitiesCoordinate[1]);
+            this.maxNearbyEntitiesCoordinate[2] = Math.max(z, this.maxNearbyEntitiesCoordinate[2]);
+        }
         if (PluginBase.isSynchronised()) {
             List<Entity> list = this.bukkit().getNearbyEntities(x, y, z);
             this.nearbyEntities = list.toArray(new Entity[0]);
@@ -900,6 +921,20 @@ public class PlayerProtocol {
     public boolean wasFlying() {
         return this.isFlying()
                 || System.currentTimeMillis() - this.lastFlight <= TPS.maximum * TPS.tickTime;
+    }
+
+    public int calculateSensitivity() {
+        if (Statistics.getDistinct(getSensitivity()) != getSensitivity().size()) {
+            final Set<Integer> prev = new HashSet<>();
+            for (int i : getSensitivity()) {
+                if (prev.contains(i / 5)) {
+                    return i;
+                } else {
+                    prev.add(i / 5);
+                }
+            }
+        }
+        return -1;
     }
 
 }

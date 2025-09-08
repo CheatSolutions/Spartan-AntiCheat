@@ -8,6 +8,7 @@ import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.compatibility.necessary.protocollib.ProtocolLib;
 import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.moderation.AwarenessNotifications;
+import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import ai.idealistic.spartan.listeners.bukkit.MovementEvent;
@@ -76,125 +77,135 @@ public class MovementListener extends PacketAdapter {
         PlayerProtocol p = PluginBase.getProtocol(player);
         PacketContainer packet = event.getPacket();
         // Always loaded if you use this listener
-        if (p.isBedrockPlayer()) {
+
+        if (!Config.settings.getBoolean("Important.bedrock_on_protocollib")
+                && p.isBedrockPlayer()) {
             return;
         }
-        Location l = p.getLocation();
-        p.setFrom(l.clone());
-        boolean onGround = ProtocolTools.onGroundPacketLevel(event);
-        p.setOnGround(onGround);
-        Location r = ProtocolTools.readLocation(event);
+        CheckThread.run(() -> {
+            Location l = p.getLocation();
+            p.setFrom(l.clone());
+            boolean onGround = ProtocolTools.onGroundPacketLevel(event);
+            p.setOnGround(onGround);
+            Location r = ProtocolTools.readLocation(event);
 
-        if (r == null) {
-            return;
-        }
-
-        Location c = ProtocolTools.readLocation(event);
-
-        if (c == null) {
-            return;
-        }
-        if (ProtocolTools.hasRotation(event.getPacket().getType())) {
-            c.setYaw(event.getPacket().getFloat().read(0));
-            c.setPitch(event.getPacket().getFloat().read(1));
-        }
-        double[] v = new double[]{c.getX(), c.getY(), c.getZ(), c.getYaw(), c.getPitch()};
-        for (Double check : v) {
-            if (check.isNaN() || check.isInfinite() || Math.abs(check) > 3E8) {
-                PluginBase.getProtocol(player).punishments.kick(Bukkit.getConsoleSender(), "Invalid packet");
+            if (r == null) {
                 return;
             }
-        }
-        boolean legacy = ProtocolTools.isFlying(event, l, r);
-        PlayerTickEvent tickEvent = new PlayerTickEvent(p, legacy, onGround).build();
-        MovementEvent.tick(tickEvent);
-        if (tickEvent.getDelay() > 65) {
-            p.lagTick = tickEvent.getDelay();
-        } else if (tickEvent.getDelay() > 10 && p.lagTick != 0)
-            p.lagTick = 0;
 
-        if (p.isDesync() && tickEvent.getDelay() > 40 && tickEvent.getDelay() < 60) {
-            p.transactionVl += (p.isBlatantDesync() ? 2 : 1);
-            if (p.transactionVl > 40
-                    && !p.isAFK()) {
-                AwarenessNotifications.optionallySend(player.getName()
-                        + " moves faster than the transaction response ("
-                        + tickEvent.getDelay() + "ms > "
-                        + (System.currentTimeMillis() - p.transactionTime) + "ms).");
-                //p.teleport(p.getLocation());
-                //event.setCancelled(true);
-                //return;
+            Location c = ProtocolTools.readLocation(event);
+
+            if (c == null) {
+                return;
             }
-        } else if (p.transactionVl > 0)
-            p.transactionVl -= 2;
-
-        if (p.transactionBoot)
-            PacketLatencyHandler.startChecking(p);
-
-        if (!ProtocolLib.getWorld(player).getName().equals(p.fromWorld)) {
-            p.fromWorld = ProtocolLib.getWorld(player).getName();
-            p.setLocation(ProtocolTools.getLoadLocation(player));
-        }
-        if (!legacy) {
-            boolean hasPosition = ProtocolTools.hasPosition(packet.getType());
-            boolean hasRotation = ProtocolTools.hasRotation(packet.getType());
-            if (hasPosition) {
-                p.addRawLocation(r);
+            if (ProtocolTools.hasRotation(event.getPacket().getType())) {
+                c.setYaw(event.getPacket().getFloat().read(0));
+                c.setPitch(event.getPacket().getFloat().read(1));
             }
-            if (ProtocolTools.isLoadLocation(p.getLocation())) {
-                p.setLocation(r);
-                p.setFrom(r);
-            } else {
+            double[] v = new double[]{c.getX(), c.getY(), c.getZ(), c.getYaw(), c.getPitch()};
+            for (Double check : v) {
+                if (check.isNaN() || check.isInfinite() || Math.abs(check) > 3E8) {
+                    PluginBase.getProtocol(player).punishments.kick(Bukkit.getConsoleSender(), "Invalid packet");
+                    return;
+                }
+            }
+            boolean legacy = ProtocolTools.isFlying(event, l, r);
+            if (c.toVector().distance(p.getFrom().toVector()) > 1e-5) {
+                PlayerTickEvent tickEvent = new PlayerTickEvent(p, legacy, onGround).build();
+                MovementEvent.tick(tickEvent);
+                if (tickEvent.getDelay() > 65) {
+                    p.lagTick = tickEvent.getDelay();
+                } else if (tickEvent.getDelay() > 10 && p.lagTick != 0)
+                    p.lagTick = 0;
+
+                if (p.isDesync() && tickEvent.getDelay() > 40 && tickEvent.getDelay() < 60) {
+                    p.transactionVl += (p.isBlatantDesync() ? 2 : 1);
+                    if (p.transactionVl > 40
+                                    && !p.isAFK()) {
+                        AwarenessNotifications.optionallySend(player.getName()
+                                        + " moves faster than the transaction response ("
+                                        + tickEvent.getDelay() + "ms > "
+                                        + (System.currentTimeMillis() - p.transactionTime) + "ms).");
+                        //p.teleport(p.getLocation());
+                        //event.setCancelled(true);
+                        //return;
+                    }
+                } else if (p.transactionVl > 0) {
+                    p.transactionVl -= 2;
+                }
+            }
+
+            if (p.transactionBoot) {
+                PacketLatencyHandler.startChecking(p);
+            }
+            if (!ProtocolLib.getWorld(player).getName().equals(p.fromWorld)) {
+                p.fromWorld = ProtocolLib.getWorld(player).getName();
+                p.setLocation(ProtocolTools.getLoadLocation(player));
+            }
+            if (!legacy) {
+                boolean hasPosition = ProtocolTools.hasPosition(packet.getType());
+                boolean hasRotation = ProtocolTools.hasRotation(packet.getType());
                 if (hasPosition) {
-                    Location to = p.getTeleport();
+                    p.addRawLocation(r);
+                }
+                if (ProtocolTools.isLoadLocation(p.getLocation())) {
+                    p.setLocation(r);
+                    p.setFrom(r);
+                } else {
+                    if (hasPosition) {
+                        Location to = p.getTeleport();
 
-                    if (to != null) { // From
-                        // Let's check guys with bad internet
-                        if (to.getX() == r.getX() && to.getY() == r.getY() && to.getZ() == r.getZ()) {
-                            p.setLocation(to.clone());
-                            p.setFrom(to.clone());
-                            p.setTeleport(null);
-                        } else {
-                            if (false) return; // todo vehicle enter
-                            for (Entity entity : p.getNearbyEntities(5))
-                                if (entity instanceof Boat) return;
+                        if (to != null) { // From
+                            // Let's check guys with bad internet
+                            if (to.getX() == r.getX() && to.getY() == r.getY() && to.getZ() == r.getZ()) {
+                                p.setLocation(to.clone());
+                                p.setFrom(to.clone());
+                                p.setTeleport(null);
+                            } else {
+                                if (false) return; // todo vehicle enter
+                                for (Entity entity : p.getNearbyEntities(5))
+                                    if (entity instanceof Boat) return;
 
-                            // Force packet stop if your packet are shit
-                            event.setCancelled(true);
-                            Bukkit.getScheduler().runTask(Register.plugin, () -> {
-                                Location teleport = p.getTeleport();
+                                // Force packet stop if your packet are shit
+                                event.setCancelled(true);
+                                PluginBase.runTask(p, () -> {
+                                    Location teleport = p.getTeleport();
 
-                                if (teleport != null) {
-                                    Location build = teleport.clone();
-                                    build.setYaw(p.getLocation().getYaw());
-                                    build.setPitch(p.getLocation().getPitch());
-                                    p.teleport(build);
-                                }
-                            });
-                            return;
+                                    if (teleport != null) {
+                                        Location build = teleport.clone();
+                                        build.setYaw(p.getLocation().getYaw());
+                                        build.setPitch(p.getLocation().getPitch());
+                                        p.teleport(build);
+                                    }
+                                });
+                                return;
+                            }
+                        } else { // Build
+                            l.setX(r.getX());
+                            l.setY(r.getY());
+                            l.setZ(r.getZ());
                         }
-                    } else { // Build
-                        l.setX(r.getX());
-                        l.setY(r.getY());
-                        l.setZ(r.getZ());
+                    }
+                    if (hasRotation) {
+                        l.setYaw(packet.getFloat().read(0));
+                        l.setPitch(packet.getFloat().read(1));
                     }
                 }
-                if (hasRotation) {
-                    l.setYaw(packet.getFloat().read(0));
-                    l.setPitch(packet.getFloat().read(1));
-                }
-            }
-            if (p.useItemPacket) {
-                if (MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_9)) {
-                    if (!p.getInventory().getItemInMainHand().getType().isEdible()
-                            && !p.getInventory().getItemInOffHand().getType().isEdible())
+                if (p.useItemPacket) {
+                    if (MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_9)) {
+                        if (!p.getInventory().getItemInMainHand().getType().isEdible()
+                                && !p.getInventory().getItemInOffHand().getType().isEdible()) {
+                            p.useItemPacket = false;
+                        }
+                    } else {
+                        if (!p.getInventory().getItemInHand().getType().isEdible()) {
+                            p.useItemPacket = false;
+                        }
+                    }
+                    if (player.getFoodLevel() == 20 || p.useItemPacketReset) {
                         p.useItemPacket = false;
-                } else {
-                    if (!p.getInventory().getItemInHand().getType().isEdible()) p.useItemPacket = false;
+                    }
                 }
-                if (player.getFoodLevel() == 20 || p.useItemPacketReset) p.useItemPacket = false;
-            }
-            CheckThread.run(() -> {
                 PlayerMoveEvent moveEvent = new PlayerMoveEvent(
                         player,
                         p.getFromLocation(),
@@ -203,16 +214,17 @@ public class MovementListener extends PacketAdapter {
                 moveEvent.setCancelled(event.isCancelled());
                 p.setEnvironment(new EnvironmentData(p));
                 MovementEvent.event(moveEvent, true);
-            });
-            if (p.flyingTicks > 0) p.flyingTicks--;
 
-            //player.sendMessage("event: " + moveEvent.getTo().toVector());
-        } else {
-            p.executeRunners(
-                    event.isCancelled(),
-                    new SuperPositionPacketEvent(p, event)
-            );
-        }
+                if (p.flyingTicks > 0) {
+                    p.flyingTicks--;
+                }
+            } else {
+                p.executeRunners(
+                        event.isCancelled(),
+                        new SuperPositionPacketEvent(p, event)
+                );
+            }
+        });
     }
 
     public enum tpFlags {

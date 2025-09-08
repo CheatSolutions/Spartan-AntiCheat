@@ -14,7 +14,7 @@ import java.util.List;
 public class Permissions {
 
     private static final String alternativeAdminKey = Register.command + ".*";
-    private static final Permission[] staffPermissions = new Permission[]{
+    public static final Permission[] staffPermissions = new Permission[]{
             Permission.WAVE,
             Permission.WARN,
             Permission.ADMIN,

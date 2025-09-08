@@ -2,6 +2,7 @@ package ai.idealistic.spartan.abstraction.data;
 
 import ai.idealistic.spartan.abstraction.event.PlayerTickEvent;
 import lombok.Getter;
+import org.bukkit.GameMode;
 
 @Getter
 public class TimerBalancer {
@@ -17,6 +18,16 @@ public class TimerBalancer {
     }
 
     public void pushDelay(PlayerTickEvent event) {
+        GameMode gameMode = event.protocol.getGameMode();
+
+        if (gameMode != GameMode.SURVIVAL
+                && gameMode != GameMode.ADVENTURE) {
+            balancer = 1000;
+            result = 0;
+            forced = 0;
+            latency = 0;
+            return;
+        }
         long delay = event.getDelay();
         forced = ((delay > 15 && delay < 48) ? forced + 1 : 0);
         latency = ((delay > 40 && delay < 48) ? latency + 10 : latency / 2);

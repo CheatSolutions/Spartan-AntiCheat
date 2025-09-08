@@ -98,4 +98,25 @@ public class ProfileContinuity {
                 : protocol.getActiveTimePlayed() + sum;
     }
 
+    public long getAverageOnlineTime() {
+        PlayerProtocol protocol = this.profile.protocol();
+        long sum = 0L;
+
+        Map<Long, Long> data = this.continuity[
+                (protocol == null
+                        ? profile.getLastDataType()
+                        : protocol.getDataType()).ordinal()
+                ];
+
+        if (!data.isEmpty()) {
+            for (long value : data.values()) {
+                sum += value;
+            }
+            sum /= data.size();
+        }
+        return protocol == null || protocol.isAFK()
+                ? sum
+                : (protocol.getActiveTimePlayed() + sum) / 2;
+    }
+
 }

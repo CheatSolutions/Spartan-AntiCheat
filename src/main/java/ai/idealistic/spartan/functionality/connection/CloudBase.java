@@ -31,7 +31,7 @@ public class CloudBase {
             PluginBase.connectionThread.execute(() -> {
                 String[][] announcements = CloudConnections.getStaffAnnouncements();
 
-                if (announcements.length > 0) {
+                if (announcements.length == 3) {
                     for (String[] announcement : announcements) {
                         if (AwarenessNotifications.canSend(
                                 protocol.getUUID(),
@@ -80,7 +80,7 @@ public class CloudBase {
                 if (!protocols.isEmpty()) {
                     String[][] announcements = CloudConnections.getStaffAnnouncements();
 
-                    if (announcements.length > 0) {
+                    if (announcements.length == 3) {
                         for (String[] announcement : announcements) {
                             for (PlayerProtocol p : protocols) {
                                 if (AwarenessNotifications.canSend(

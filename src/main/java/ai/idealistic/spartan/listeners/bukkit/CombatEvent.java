@@ -5,6 +5,7 @@ import ai.idealistic.spartan.abstraction.event.EntityAttackPlayerEvent;
 import ai.idealistic.spartan.abstraction.event.PlayerAttackEvent;
 import ai.idealistic.spartan.abstraction.event.PlayerUseEvent;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -27,7 +28,7 @@ public class CombatEvent implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void Event(EntityDamageByEntityEvent e) {
-        event(e, false);
+        CheckThread.run(() -> event(e, false));
     }
 
     public static void event(EntityDamageByEntityEvent e, boolean packets) {

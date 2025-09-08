@@ -1,6 +1,7 @@
 package ai.idealistic.spartan.listeners.protocol;
 
 import ai.idealistic.spartan.Register;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.ListenerPriority;
@@ -19,7 +20,7 @@ public class AbilitiesListener extends PacketAdapter {
     public void onPacketReceiving(PacketEvent event) {
         Player player = event.getPlayer();
         if (player.getAllowFlight()) {
-            PluginBase.getProtocol(player).flyingTicks = 2;
+            CheckThread.run(() -> PluginBase.getProtocol(player).flyingTicks = 2);
         }
     }
 

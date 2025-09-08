@@ -1,7 +1,6 @@
 package ai.idealistic.spartan.utils.minecraft.world;
 
 import ai.idealistic.spartan.functionality.server.MultiVersion;
-import ai.idealistic.spartan.utils.minecraft.entity.CombatUtils;
 import lombok.Getter;
 import org.bukkit.Material;
 
@@ -9,9 +8,7 @@ import java.util.*;
 
 public class GroundUtils {
 
-    private static final List<Double>
-            blockHeights = new ArrayList<>(),
-            collisionHeights = new ArrayList<>();
+    private static final List<Double> blockHeights = new ArrayList<>();
     @Getter
     private static final Set<Material> abstractMaterials = new HashSet<>();
 
@@ -49,18 +46,6 @@ public class GroundUtils {
 
         // Separator
 
-        double playerHeightCeil = Math.ceil(CombatUtils.playerWidthAndHeight[1]);
-
-        for (double height : blockHeights) {
-            collisionHeights.add(
-                    playerHeightCeil
-                            + (height == 0.0 ? 1.0 : height)
-                            - CombatUtils.playerWidthAndHeight[1]
-            );
-        }
-
-        // Separator
-
         for (Material m : Material.values()) {
             if (m == Material.SNOW
                     || BlockUtils.areShulkerBoxes(m)
@@ -95,10 +80,6 @@ public class GroundUtils {
 
     public static boolean blockHeightExists(double d) {
         return blockHeights.contains(d);
-    }
-
-    public static boolean collisionHeightExists(double d) {
-        return collisionHeights.contains(d);
     }
 
 }

@@ -4,6 +4,7 @@ import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.compatibility.necessary.protocollib.ProtocolLib;
 import ai.idealistic.spartan.functionality.concurrent.CheckThread;
+import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import com.comphenix.protocol.PacketType;
@@ -27,9 +28,14 @@ public class UseItemStatusHandle extends PacketAdapter {
     public void onPacketReceiving(PacketEvent event) {
         Player player = event.getPlayer();
         PlayerProtocol protocol = PluginBase.getProtocol(player);
+
+        if (!Config.settings.getBoolean("Important.bedrock_on_protocollib")
+                && protocol.isBedrockPlayer()) {
+            return;
+        }
         PacketContainer packet = event.getPacket();
+
         CheckThread.run(() -> {
-            //player.sendMessage("p: " + event.getPacket().getType() + " " + event.getPacket().getStructures().getValues());
             if (packet.getType().equals(PacketType.Play.Client.BLOCK_DIG)) {
                 protocol.useItemPacket = false;
             } else {
@@ -56,7 +62,6 @@ public class UseItemStatusHandle extends PacketAdapter {
                         (itemStack.getType().isEdible() && (player.getFoodLevel() != 20
                                 || itemStack.getType().toString().contains("GOLDEN_APPLE"))
                                 && !protocol.getGameMode().equals(GameMode.CREATIVE))) {
-                    //player.sendMessage("use");
                     protocol.useItemPacket = true;
                     protocol.useItemPacketReset =
                                     !(itemStack.getType().toString().contains("SHIELD") ||

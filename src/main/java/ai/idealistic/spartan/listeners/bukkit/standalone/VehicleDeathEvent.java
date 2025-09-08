@@ -1,6 +1,7 @@
 package ai.idealistic.spartan.listeners.bukkit.standalone;
 
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import org.bukkit.entity.Entity;
@@ -28,14 +29,14 @@ public class VehicleDeathEvent implements Listener {
                 for (Entity passenger : passengers) {
                     if (passenger instanceof Player) {
                         PlayerProtocol p = PluginBase.getProtocol((Player) passenger, true);
-                        p.executeRunners(
+                        CheckThread.run(() -> p.executeRunners(
                                 false,
                                 new VehicleExitEvent(
                                         (Vehicle) entity,
                                         (Player) passenger,
                                         false
                                 )
-                        );
+                        ));
                     }
                 }
             }

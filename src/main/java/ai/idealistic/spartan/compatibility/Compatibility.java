@@ -62,7 +62,6 @@ public class Compatibility {
         ECO_ENCHANTS("EcoEnchants"),
         ITEMS_ADDER("ItemsAdder"),
         RAMPEN_DRILLS("RampenDrills"),
-        OLD_COMBAT_MECHANICS("OldCombatMechanics"),
         PROJECT_KORRA("ProjectKorra"),
         FLOODGATE("Floodgate"),
         ADVANCED_ENCHANTMENTS("AdvancedEnchantments");
@@ -250,7 +249,6 @@ public class Compatibility {
                 () -> Register.enable(new AdvancedAbilities()),
                 null
         );
-        CompatibilityType.OLD_COMBAT_MECHANICS.setFunctional();
         CompatibilityType.VEIN_MINER.setFunctional(
                 VeinMiner::reload,
                 null
@@ -348,7 +346,10 @@ public class Compatibility {
                 () -> Register.enable(new AureliumSkills()),
                 null
         );
-        CompatibilityType.ITEMS_ADDER.setFunctional();
+        CompatibilityType.ITEMS_ADDER.setFunctional(
+                () -> Register.enable(new ItemsAdder()),
+                null
+        );
     }
 
     private static boolean getBoolean(String path, boolean create) {

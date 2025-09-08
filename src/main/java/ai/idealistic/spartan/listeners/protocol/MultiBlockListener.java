@@ -18,6 +18,7 @@ public class MultiBlockListener extends PacketAdapter {
     public MultiBlockListener() {
         super(Register.plugin, ListenerPriority.HIGHEST, PacketType.Play.Server.MULTI_BLOCK_CHANGE);
     }
+
     @Override
     public void onPacketSending(PacketEvent event) {
         Player player = event.getPlayer();
@@ -44,18 +45,17 @@ public class MultiBlockListener extends PacketAdapter {
                 int worldZ = (chunkZ << 4) | relZ;
 
                 final Location loc = new Location(
-                                world,
-                                ((chunkX * 16) + worldX) / 2.0,
-                                worldY,
-                                ((chunkZ * 16) + worldZ) / 2.0
+                        world,
+                        ((chunkX * 16) + worldX) / 2.0,
+                        worldY,
+                        ((chunkZ * 16) + worldZ) / 2.0
                 );
 
                 final Object nmsData = blockData[i];
-                if (nmsData.toString().toLowerCase().contains("slime_block")) {
-                    //player.sendMessage("p: " + loc.distance(protocol.getLocation()));
-                    if (loc.distance(protocol.getLocation()) < 14) {
-                        protocol.predictedSlimeTicks = 6;
-                    }
+
+                if (nmsData.toString().toLowerCase().contains("slime_block")
+                        && loc.distance(protocol.getLocation()) < 14) {
+                    CheckThread.run(() -> protocol.predictedSlimeTicks = 6);
                 }
             }
         });

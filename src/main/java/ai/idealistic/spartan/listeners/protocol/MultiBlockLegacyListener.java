@@ -9,9 +9,7 @@ import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.wrappers.ChunkCoordIntPair;
 import com.comphenix.protocol.wrappers.MultiBlockChangeInfo;
-import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -29,12 +27,12 @@ public class MultiBlockLegacyListener extends PacketAdapter {
         PlayerProtocol protocol = PluginBase.getProtocol(player);
         World world = player.getWorld();
         PacketContainer packet = event.getPacket();
+
         if (packet.getMultiBlockChangeInfoArrays().getValues().isEmpty()) {
             return;
         }
         List<MultiBlockChangeInfo[]> mList = packet.getMultiBlockChangeInfoArrays().getValues();
-        ChunkCoordIntPair c = packet.getMultiBlockChangeInfoArrays().getValues().get(0)[0].getChunk();
-        Chunk chunk = player.getWorld().getChunkAt(c.getChunkX(), c.getChunkZ());
+
         CheckThread.run(() -> {
             for (MultiBlockChangeInfo[] m : mList) {
                 for (MultiBlockChangeInfo info : m) {

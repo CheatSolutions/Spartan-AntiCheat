@@ -4,6 +4,7 @@ import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.event.CPlayerVelocityEvent;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.functionality.concurrent.CheckThread;
+import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import ai.idealistic.spartan.listeners.bukkit.VelocityEvent;
 import com.comphenix.protocol.PacketType;
@@ -30,13 +31,18 @@ public class VelocityListener extends PacketAdapter {
         Player player = event.getPlayer();
         PlayerProtocol protocol = PluginBase.getProtocol(player);
 
-        if (protocol.isBedrockPlayer()) {
+        if (!Config.settings.getBoolean("Important.bedrock_on_protocollib")
+                && protocol.isBedrockPlayer()) {
             return;
         }
         PacketContainer packet = event.getPacket();
 
+        if (!packet.getType().equals(PacketType.Play.Server.ENTITY_VELOCITY)) {
+            return;
+        }
         if (!packet.getIntegers().getValues().isEmpty()) {
             int id = packet.getIntegers().getValues().get(0);
+
             if (protocol.getEntityId() == id) {
                 CheckThread.run(() -> {
                     double x = packet.getIntegers().read(1).doubleValue() / 8000.0D,

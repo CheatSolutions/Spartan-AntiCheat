@@ -2,6 +2,7 @@ package ai.idealistic.spartan.listeners.bukkit.standalone;
 
 import ai.idealistic.spartan.abstraction.inventory.InventoryMenu;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import ai.idealistic.spartan.utils.java.StringUtils;
@@ -20,7 +21,7 @@ public class InventoryEvent implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     private void ItemDrop(PlayerDropItemEvent e) {
         PlayerProtocol p = PluginBase.getProtocol(e.getPlayer(), true);
-        p.executeRunners(e.isCancelled(), e);
+        CheckThread.run(() -> p.executeRunners(e.isCancelled(), e));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -30,7 +31,7 @@ public class InventoryEvent implements Listener {
         if (BlockUtils.hasMaterial(item)) {
             Player n = (Player) e.getWhoClicked();
             PlayerProtocol p = PluginBase.getProtocol(n, true);
-            p.executeRunners(false, e);
+            CheckThread.run(() -> p.executeRunners(false, e));
 
             if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
                 ClickType click = e.getClick();

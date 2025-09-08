@@ -3,6 +3,8 @@ package ai.idealistic.spartan.listeners.protocol;
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.event.ServerBlockChange;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
+import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.ListenerPriority;
@@ -23,11 +25,16 @@ public class PacketServerBlockHandle extends PacketAdapter {
     public void onPacketSending(PacketEvent event) {
         Player player = event.getPlayer();
         PlayerProtocol protocol = PluginBase.getProtocol(player);
+
+        if (!Config.settings.getBoolean("Important.bedrock_on_protocollib")
+                && protocol.isBedrockPlayer()) {
+            return;
+        }
         PacketContainer packet = event.getPacket();
         BlockPosition blockPosition = packet.getBlockPositionModifier().read(0);
         WrappedBlockData blockData = packet.getBlockData().read(0);
         ServerBlockChange serverBlockChange = new ServerBlockChange(blockPosition, blockData.getType());
-        protocol.packetWorld.worldChange(serverBlockChange);
+        CheckThread.run(() -> protocol.packetWorld.worldChange(serverBlockChange));
     }
 
 }

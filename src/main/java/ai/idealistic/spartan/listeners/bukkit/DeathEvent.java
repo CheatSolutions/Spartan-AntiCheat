@@ -1,6 +1,7 @@
 package ai.idealistic.spartan.listeners.bukkit;
 
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,7 +13,7 @@ public class DeathEvent implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void Event(PlayerDeathEvent e) {
-        event(e.getEntity(), false, e);
+        CheckThread.run(() -> event(e.getEntity(), false, e));
     }
 
     public static void event(Player player, boolean packets, Object object) {

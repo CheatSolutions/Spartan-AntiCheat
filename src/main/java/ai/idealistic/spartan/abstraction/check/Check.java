@@ -5,7 +5,6 @@ import ai.idealistic.spartan.api.CheckPunishmentToggleEvent;
 import ai.idealistic.spartan.api.CheckSilentToggleEvent;
 import ai.idealistic.spartan.api.CheckToggleEvent;
 import ai.idealistic.spartan.api.ToggleAction;
-import ai.idealistic.spartan.functionality.connection.PluginAddons;
 import ai.idealistic.spartan.functionality.moderation.AwarenessNotifications;
 import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.tracking.ResearchEngine;
@@ -67,9 +66,13 @@ public class Check {
 
     private static boolean panic = false;
     public static final int maxCommands = 10;
-    private static final File file = new File(
+    private static final File
+            file = new File(
             Register.plugin.getDataFolder() + "/checks.yml"
-    );
+    ),
+            advancedFile = new File(
+                    Register.plugin.getDataFolder() + "/advanced.yml"
+            );
 
     private static final List<String> defaultPunishments = new ArrayList<>(Check.maxCommands);
 
@@ -97,11 +100,11 @@ public class Check {
     private String name;
     private final Map<String, Object> options;
     public final boolean handleCancelledEvents;
-    private final boolean[] enabled, silent, punish;
+    private final boolean[] enabled, silent, punish, detectionDetails;
     private final Set<String>
             disabledWorlds,
             silentWorlds;
-    private final Collection<String> punishments;
+    private Collection<String> punishments;
 
     // Object Methods
 
@@ -121,6 +124,7 @@ public class Check {
         this.enabled = new boolean[DataType.values().length];
         this.silent = new boolean[DataType.values().length];
         this.punish = new boolean[DataType.values().length];
+        this.detectionDetails = new boolean[DataType.values().length];
 
         for (Check.DataType dataType : DataType.values()) {
             Object optionValue = getOption(
@@ -142,20 +146,25 @@ public class Check {
                     optionValue instanceof Long || optionValue instanceof Integer || optionValue instanceof Short ? ((long) optionValue) > 0L :
                             optionValue instanceof Double || optionValue instanceof Float ? ((double) optionValue) > 0.0 :
                                     Boolean.parseBoolean(optionValue.toString().toLowerCase());
+            optionValue = getOption(
+                    "punishments.enabled." + dataType.toString().toLowerCase(),
+                    true,
+                    false
+            );
+            this.punish[dataType.ordinal()] = optionValue instanceof Boolean ? (boolean) optionValue :
+                    optionValue instanceof Long || optionValue instanceof Integer || optionValue instanceof Short ? ((long) optionValue) > 0L :
+                            optionValue instanceof Double || optionValue instanceof Float ? ((double) optionValue) > 0.0 :
+                                    Boolean.parseBoolean(optionValue.toString().toLowerCase());
 
-            if (PluginAddons.isFreeEdition()) {
-                this.punish[dataType.ordinal()] = false;
-            } else {
-                optionValue = getOption(
-                        "punishments.enabled." + dataType.toString().toLowerCase(),
-                        true,
-                        false
-                );
-                this.punish[dataType.ordinal()] = optionValue instanceof Boolean ? (boolean) optionValue :
-                        optionValue instanceof Long || optionValue instanceof Integer || optionValue instanceof Short ? ((long) optionValue) > 0L :
-                                optionValue instanceof Double || optionValue instanceof Float ? ((double) optionValue) > 0.0 :
-                                        Boolean.parseBoolean(optionValue.toString().toLowerCase());
-            }
+            optionValue = getOption(
+                    "detection_details." + dataType.toString().toLowerCase(),
+                    true,
+                    false
+            );
+            this.detectionDetails[dataType.ordinal()] = optionValue instanceof Boolean ? (boolean) optionValue :
+                    optionValue instanceof Long || optionValue instanceof Integer || optionValue instanceof Short ? ((long) optionValue) > 0L :
+                            optionValue instanceof Double || optionValue instanceof Float ? ((double) optionValue) > 0.0 :
+                                    Boolean.parseBoolean(optionValue.toString().toLowerCase());
         }
 
         // Separator
@@ -243,41 +252,7 @@ public class Check {
 
         // Separator
 
-        String sectionString = hackType + ".punishments.commands";
-        YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
-
-        if (!configuration.contains(sectionString)) {
-            for (int position = 0; position < defaultPunishments.size(); position++) {
-                ConfigUtils.add(file, sectionString + "." + (position + 1), defaultPunishments.get(position));
-            }
-        }
-        ConfigurationSection section = configuration.getConfigurationSection(sectionString);
-
-        if (section != null) {
-            Collection<String> list = new ArrayList<>();
-            Set<String> keys = section.getKeys(true);
-
-            if (!keys.isEmpty()) {
-                sectionString += ".";
-
-                for (String key : keys) {
-                    if (AlgebraUtils.validInteger(key)) {
-                        int number = Integer.parseInt(key);
-
-                        if (number >= 1 && number <= Check.maxCommands) {
-                            String command = configuration.getString(sectionString + number);
-
-                            if (command != null && !command.isEmpty()) {
-                                list.add(command);
-                            }
-                        }
-                    }
-                }
-            }
-            this.punishments = list;
-        } else {
-            this.punishments = new ArrayList<>(0);
-        }
+        calculatePunishmentCommands();
     }
 
     // Separator
@@ -380,7 +355,7 @@ public class Check {
         AwarenessNotifications.forcefullySend("Failed to find/create the '" + file.getName() + "' file.");
     }
 
-    public Object getOption(String option, Object def, boolean cache) {
+    private Object getOption(String option, Object def, boolean cache) {
         if (cache) {
             Object cached = options.get(option);
 
@@ -391,6 +366,7 @@ public class Check {
         try {
             String key = this.hackType + "." + option;
             boolean isDefaultNull = def == null;
+            File file = cache ? advancedFile : Check.file;
             YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
 
             if (cache) {
@@ -489,9 +465,38 @@ public class Check {
 
     // Separator
 
+    public boolean isDetectionDetails(Check.DataType dataType) {
+        if (dataType == null) {
+            for (Check.DataType type : DataType.values()) {
+                if (this.detectionDetails[type.ordinal()]) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return this.detectionDetails[dataType.ordinal()];
+        }
+    }
+
+    public void setDetectionDetails(Check.DataType dataType, boolean b) {
+        Check.DataType[] dataTypes;
+
+        if (dataType == null) {
+            dataTypes = DataType.values();
+        } else {
+            dataTypes = new Check.DataType[]{dataType};
+        }
+        for (Check.DataType type : dataTypes) {
+            this.detectionDetails[type.ordinal()] = b;
+            setOption("detection_details." + type.toString().toLowerCase(), b);
+            options.clear();
+        }
+    }
+
+    // Separator
+
     public boolean canPunish(Check.DataType dataType) {
-        if (panic
-                || PluginAddons.isFreeEdition()) {
+        if (panic) {
             return false;
         }
         if (dataType == null) {
@@ -564,10 +569,65 @@ public class Check {
         return new ArrayList<>(this.punishments);
     }
 
-    public void setPunish(Check.DataType dataType, boolean b) {
-        if (PluginAddons.isFreeEdition()) {
+    private void calculatePunishmentCommands() {
+        String sectionString = hackType + ".punishments.commands";
+        YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
+
+        if (!configuration.contains(sectionString)) {
+            for (int position = 0; position < defaultPunishments.size(); position++) {
+                ConfigUtils.add(file, sectionString + "." + (position + 1), defaultPunishments.get(position));
+            }
+        }
+        ConfigurationSection section = configuration.getConfigurationSection(sectionString);
+
+        if (section != null) {
+            Collection<String> list = new ArrayList<>();
+            Set<String> keys = section.getKeys(true);
+
+            if (!keys.isEmpty()) {
+                sectionString += ".";
+
+                for (String key : keys) {
+                    if (AlgebraUtils.validInteger(key)) {
+                        int number = Integer.parseInt(key);
+
+                        if (number >= 1 && number <= Check.maxCommands) {
+                            String command = configuration.getString(sectionString + number);
+
+                            if (command != null && !command.isEmpty()) {
+                                list.add(command);
+                            }
+                        }
+                    }
+                }
+            }
+            this.punishments = list;
+        } else {
+            this.punishments = new ArrayList<>(0);
+        }
+    }
+
+    public void setPunishmentCommand(int position, String command) {
+        if (position < 1 || position > Check.maxCommands) {
             return;
         }
+        if (command == null) {
+            command = "";
+        }
+        String sectionString = this.hackType + ".punishments.commands." + position;
+        YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
+        configuration.set(sectionString, command);
+
+        try {
+            configuration.save(file);
+            calculatePunishmentCommands();
+        } catch (Exception ex) {
+            AwarenessNotifications.forcefullySend("Failed to store '" + sectionString + "' option in '" + file.getName() + "' file.");
+            ex.printStackTrace();
+        }
+    }
+
+    public void setPunish(Check.DataType dataType, boolean b) {
         Check.DataType[] dataTypes;
 
         if (dataType == null) {

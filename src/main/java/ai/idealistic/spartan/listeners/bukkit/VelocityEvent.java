@@ -2,6 +2,7 @@ package ai.idealistic.spartan.listeners.bukkit;
 
 import ai.idealistic.spartan.abstraction.event.CPlayerVelocityEvent;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -12,13 +13,13 @@ public class VelocityEvent implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void Event(PlayerVelocityEvent e) {
-        event(
+        CheckThread.run(() -> event(
                 new CPlayerVelocityEvent(
                         e.getPlayer(),
                         e.getVelocity()
                 ),
                 false
-        );
+        ));
     }
 
     public static void event(CPlayerVelocityEvent e, boolean packets) {

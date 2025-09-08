@@ -33,23 +33,20 @@ public class JarVerification {
             } else {
                 Bukkit.getPluginManager().disablePlugin(plugin);
             }
-        } else {
-            PluginAddons.refresh();
+        } else if (!PluginAddons.refresh()
+                && !isValid(plugin)) {
+            String message = "This version of " + plugin.getName() + " does not have a license."
+                    + " If this download is pirated, please consider purchasing the plugin"
+                    + " when your server starts making enough money. We also sell on BuiltByBit"
+                    + " which supports many payment methods for all countries including yours.";
+            List<PlayerProtocol> staff = Permissions.getStaff();
 
-            if (!isValid(plugin)) {
-                String message = "This version of " + plugin.getName() + " does not have a license."
-                        + " If this download is pirated, please consider purchasing the plugin"
-                        + " when your server starts making enough money. We also sell on BuiltByBit"
-                        + " which supports many payment methods for all countries including yours.";
-                List<PlayerProtocol> staff = Permissions.getStaff();
-
-                if (!staff.isEmpty()) {
-                    for (PlayerProtocol protocol : staff) {
-                        protocol.sendImportantMessage(AwarenessNotifications.getNotification(message));
-                    }
+            if (!staff.isEmpty()) {
+                for (PlayerProtocol protocol : staff) {
+                    protocol.sendImportantMessage(AwarenessNotifications.getNotification(message));
                 }
-                AwarenessNotifications.forcefullySend(message);
             }
+            AwarenessNotifications.forcefullySend(message);
         }
     }
 

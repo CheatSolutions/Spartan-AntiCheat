@@ -2,9 +2,12 @@ package ai.idealistic.spartan.listeners.bukkit;
 
 import ai.idealistic.spartan.abstraction.event.PlayerTickEvent;
 import ai.idealistic.spartan.abstraction.event.PlayerTransactionEvent;
+import ai.idealistic.spartan.abstraction.event.RotationEvent;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.abstraction.world.ServerLocation;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.PluginBase;
+import kireiko.dev.millennium.types.Vec2f;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -15,7 +18,7 @@ public class MovementEvent implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void MoveEvent(PlayerMoveEvent e) {
-        event(e, false);
+        CheckThread.run(() -> event(e, false));
     }
 
     public static void event(PlayerMoveEvent e, boolean packets) {
@@ -31,6 +34,15 @@ public class MovementEvent implements Listener {
             ServerLocation to = vehicle != null
                     ? new ServerLocation(vehicle)
                     : new ServerLocation(nto);
+            RotationEvent rotationEvent = new RotationEvent(
+                            protocol,
+                            new Vec2f(e.getFrom().getYaw(), e.getFrom().getPitch()),
+                            new Vec2f(e.getTo().getYaw(), e.getTo().getPitch())
+                            );
+            protocol.getSensitivityProcessor().setLastDeltaPitch(rotationEvent.getDelta().getY());
+            protocol.getSensitivityProcessor().processSensitivity();
+            protocol.getCinematicComponent().process(rotationEvent);
+            protocol.executeRunners(false, rotationEvent);
 
             if (!protocol.processLastMoveEvent(
                     nto,

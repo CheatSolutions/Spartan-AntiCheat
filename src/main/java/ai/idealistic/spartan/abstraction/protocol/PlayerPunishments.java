@@ -49,7 +49,15 @@ public class PlayerPunishments {
 
             PluginBase.transferTask(
                     this.parent,
-                    () -> target.kickPlayer(kick)
+                    () -> {
+                        if (target.isOnline()) {
+                            PlayerProtocol protocol = PluginBase.getProtocol(target.getUniqueId());
+
+                            if (protocol != null) {
+                                target.kickPlayer(kick);
+                            }
+                        }
+                    }
             );
             return true;
         } else {

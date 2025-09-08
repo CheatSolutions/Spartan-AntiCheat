@@ -2,8 +2,7 @@ package ai.idealistic.spartan.functionality.server;
 
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.inventory.InventoryMenu;
-import ai.idealistic.spartan.abstraction.inventory.implementation.ManageChecks;
-import ai.idealistic.spartan.abstraction.inventory.implementation.PlayerInfo;
+import ai.idealistic.spartan.abstraction.inventory.implementation.*;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.compatibility.Compatibility;
 import ai.idealistic.spartan.compatibility.necessary.protocollib.ProtocolLib;
@@ -27,11 +26,31 @@ public class PluginBase {
             connectionThread = new GeneralThread.ThreadPool(TPS.tickTime),
             dataThread = new GeneralThread.ThreadPool(1L);
 
-    public static final ManageChecks manageChecks = new ManageChecks();
     public static final PlayerInfo playerInfo = new PlayerInfo();
+    public static final PluginChargeMenu chargeMenu = new PluginChargeMenu();
+    public static final DetailsMenu detailsMenu = new DetailsMenu();
+    public static final EditionMenu editionMenu = new EditionMenu();
+    public static final PreventionsMenu preventionsMenu = new PreventionsMenu();
+    public static final PunishmentsMenu punishmentsMenu = new PunishmentsMenu();
+    public static final SynMenu synMenu = new SynMenu();
+    public static final DetectionsMenu detectionsMenu = new DetectionsMenu();
+    public static final GeneralMenu generalMenu = new GeneralMenu();
+    public static final StatisticsMenu statisticsMenu = new StatisticsMenu();
+    public static final CommandsMenu commandsMenu = new CommandsMenu();
+    public static final SubCommandsMenu subCommandsMenu = new SubCommandsMenu();
     public static final InventoryMenu[] menus = new InventoryMenu[]{
-            manageChecks,
-            playerInfo
+            playerInfo,
+            chargeMenu,
+            detailsMenu,
+            editionMenu,
+            preventionsMenu,
+            punishmentsMenu,
+            synMenu,
+            detectionsMenu,
+            generalMenu,
+            statisticsMenu,
+            commandsMenu,
+            subCommandsMenu
     };
 
     public static final int
@@ -218,8 +237,7 @@ public class PluginBase {
     // Separator
 
     public static void runCommand(String command) {
-        Bukkit.getScheduler().runTask(
-                Register.plugin,
+        PluginBase.transferTask(
                 () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command)
         );
     }

@@ -3,8 +3,8 @@ package ai.idealistic.spartan.abstraction.entity;
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.abstraction.world.ServerLocation;
-import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
+import ai.idealistic.spartan.functionality.server.PluginBase;
 import ai.idealistic.spartan.utils.minecraft.entity.PlayerUtils;
 import ai.idealistic.spartan.utils.minecraft.inventory.EnchantmentUtils;
 import ai.idealistic.spartan.utils.minecraft.inventory.InventoryUtils;
@@ -159,7 +159,7 @@ public class PluginNPC {
     }
 
     public void updateHead() {
-        CheckThread.run(
+        PluginBase.dataThread.executeIfFree(
                 () -> armorStand.getEquipment().setHelmet(
                         InventoryUtils.getSkull(offlinePlayer, backupName, true)
                 )

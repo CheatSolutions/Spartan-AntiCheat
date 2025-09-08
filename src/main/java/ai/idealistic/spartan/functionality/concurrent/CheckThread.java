@@ -23,8 +23,7 @@ public class CheckThread {
     private static final char INNER_CLASS_SEPARATOR_CHAR = '$';
     public static int STOP_WATCH_TIME_MILLIS = 750;
     @Getter
-    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(
-            Runtime.getRuntime().availableProcessors(),
+    private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(
             new ThreadFactoryBuilder().setNameFormat(Register.pluginName + " Thread %d").build()
     );
     private static final Map<String, Boolean> processedErrors = new OverflowMap<>(
@@ -44,12 +43,12 @@ public class CheckThread {
         return scheduler.submit(new DecoratedCallable<>(callable));
     }
 
-    public static ScheduledFuture<?> later(Runnable runnable, long delay, TimeUnit time) {
-        return scheduler.schedule(new DecoratedRunnable(runnable), delay, time);
+    public static ScheduledFuture<?> later(Runnable runnable, long delay) {
+        return scheduler.schedule(new DecoratedRunnable(runnable), delay, TimeUnit.MILLISECONDS);
     }
 
-    public static ScheduledFuture<?> timer(Runnable runnable, long delay, long period, TimeUnit time) {
-        return scheduler.scheduleAtFixedRate(new DecoratedRunnable(runnable), delay, period, time);
+    public static ScheduledFuture<?> timer(Runnable runnable, long delay, long period) {
+        return scheduler.scheduleAtFixedRate(new DecoratedRunnable(runnable), delay, period, TimeUnit.MILLISECONDS);
     }
 
     public static void cancel(ScheduledFuture<?> timer) {

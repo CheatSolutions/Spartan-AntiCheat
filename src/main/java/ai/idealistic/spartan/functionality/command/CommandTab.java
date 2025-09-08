@@ -1,5 +1,7 @@
 package ai.idealistic.spartan.functionality.command;
 
+import ai.idealistic.spartan.abstraction.inventory.implementation.PlayerInfo;
+import ai.idealistic.spartan.abstraction.inventory.implementation.SynMenu;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.api.Permission;
 import ai.idealistic.spartan.functionality.server.Permissions;
@@ -16,13 +18,15 @@ public class CommandTab implements TabCompleter {
     private static final Map<String, Permission[]> commands = new LinkedHashMap<>(18); // Attention
 
     static {
+        commands.put("info", PlayerInfo.permissions);
+        commands.put("syn", SynMenu.permissions);
+        commands.put("charge", Permissions.staffPermissions);
         commands.put("panic", new Permission[]{Permission.MANAGE});
         commands.put("toggle", new Permission[]{Permission.MANAGE});
         commands.put("rl", new Permission[]{Permission.RELOAD});
         commands.put("reload", new Permission[]{Permission.RELOAD});
         commands.put("notifications", new Permission[]{Permission.NOTIFICATIONS});
         commands.put("verbose", new Permission[]{Permission.NOTIFICATIONS});
-        commands.put("info", new Permission[]{Permission.INFO});
         commands.put("kick", new Permission[]{Permission.KICK});
         commands.put("warn", new Permission[]{Permission.WARN});
         commands.put("bypass", new Permission[]{Permission.USE_BYPASS});

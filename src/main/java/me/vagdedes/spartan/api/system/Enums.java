@@ -12,7 +12,6 @@ public class Enums {
         NoSwing(CheckEnums.HackType.NO_SWING),
         IrregularMovements(CheckEnums.HackType.IRREGULAR_MOVEMENTS),
         ImpossibleActions(CheckEnums.HackType.IMPOSSIBLE_ACTIONS),
-        AutoRespawn(CheckEnums.HackType.AUTO_RESPAWN),
         InventoryClicks(CheckEnums.HackType.INVENTORY_CLICKS),
         Criticals(CheckEnums.HackType.CRITICALS),
         SpeedSimulation(CheckEnums.HackType.SPEED_SIMULATION),

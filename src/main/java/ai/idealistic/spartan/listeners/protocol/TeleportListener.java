@@ -2,6 +2,8 @@ package ai.idealistic.spartan.listeners.protocol;
 
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
+import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import ai.idealistic.spartan.listeners.bukkit.TeleportEvent;
 import com.comphenix.protocol.PacketType;
@@ -31,16 +33,16 @@ public class TeleportListener extends PacketAdapter {
         Player player = event.getPlayer();
         PlayerProtocol protocol = PluginBase.getProtocol(player);
 
-        if (protocol.isBedrockPlayer()) {
+        if (!Config.settings.getBoolean("Important.bedrock_on_protocollib")
+                && protocol.isBedrockPlayer()) {
             return;
         }
         PacketType packetType = event.getPacket().getType();
 
         if (packetType.equals(PacketType.Play.Server.POSITION)) {
-            TeleportEvent.teleport(player, true, event);
-
+            CheckThread.run(() -> TeleportEvent.teleport(player, true, event));
         } else if (packetType.equals(PacketType.Play.Server.RESPAWN)) {
-            TeleportEvent.respawn(player, true, event);
+            CheckThread.run(() -> TeleportEvent.respawn(player, true, event));
         }
     }
 

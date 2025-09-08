@@ -3,7 +3,6 @@ package ai.idealistic.spartan.functionality.connection;
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.check.Check;
 import ai.idealistic.spartan.abstraction.check.CheckEnums;
-import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import ai.idealistic.spartan.utils.java.ReflectionUtils;
 import ai.idealistic.spartan.utils.math.AlgebraUtils;
@@ -15,17 +14,27 @@ import java.io.File;
 public class PluginAddons {
 
     public static final String
-            patreonURL = "https:/www.patreon.com/SpartanAntiCheat",
-            disabledInFreeEdition = "Cannot be modified in free edition";
+            pluginURL = "https://spartan.top";
     private static final boolean[]
             ownedChecks = new boolean[CheckEnums.HackType.values().length],
             ownsEditions = new boolean[Check.DataType.values().length];
     @Getter
     private static boolean freeEdition = true;
+    @Getter
+    private static boolean syn = true; // Attention
+    public static final String
+            synCommand = Register.command + " syn",
+            synName = Register.pluginName + " Syn",
+            synURL = "https://spartan.top/syn",
+            synMissingPlaceholder = "{feature}",
+            synClick = "§aClick to visit " + synURL + ".",
+            synMissingCustom = "You must purchase " + synName + " to use " + synMissingPlaceholder + ".\n"
+                    + "Visit " + synURL + " for more information.",
+            synMissingDefault = synMissingCustom.replace(synMissingPlaceholder, "this feature");
 
-    public static void refresh() {
+    public static boolean refresh() {
         if (false) { // Addons
-            disableFreeEdition();
+            freeEdition = false;
 
             for (Check.DataType dataType : Check.DataType.values()) {
                 ownsEditions[dataType.ordinal()] = true;
@@ -71,7 +80,7 @@ public class PluginAddons {
                 }
             });
         } else if (false) { // Multi jars
-            disableFreeEdition();
+            freeEdition = false;
 
             for (Check.DataType dataType : Check.DataType.values()) {
                 ownsEditions[dataType.ordinal()] = true;
@@ -156,116 +165,163 @@ public class PluginAddons {
         } else if (IDs.builtByBit
                 || IDs.polymart
                 || IDs.spigot) { // Premium Editions
-            disableFreeEdition();
-
-            for (CheckEnums.HackType hackType : CheckEnums.HackType.values()) {
-                ownedChecks[hackType.ordinal()] = true;
-            }
-            String java = IDs.builtByBit ? "11196" : "350",
-                    bedrock = IDs.builtByBit ? "12832" : "3600";
-
-            if (IDs.resource.equals(java)) {
-                ownsEditions[Check.DataType.JAVA.ordinal()] = true;
-            } else if (IDs.resource.equals(bedrock)) {
-                ownsEditions[Check.DataType.BEDROCK.ordinal()] = true;
-            }
-            PluginBase.dataThread.executeIfUnknownThreadElseHere(() -> {
-                String pluginsFolder = Register.plugin.getDataFolder().toString().replace(
-                        Register.pluginName,
-                        ""
-                );
-
-                for (File file : new File(pluginsFolder).listFiles()) {
-                    if (file.isFile()
-                            && file.getName().endsWith(".jar")) {
-                        String clazz = IDs.class.getCanonicalName();
-                        Object object = ReflectionUtils.getFieldFromJar(
-                                file.getAbsolutePath(),
-                                clazz,
-                                "user"
-                        );
-
-                        if (object != null
-                                && object.toString().equals(IDs.user)) {
-                            object = ReflectionUtils.getFieldFromJar(
-                                    file.getAbsolutePath(),
-                                    clazz,
-                                    "resource"
-                            );
-
-                            if (object != null
-                                    && !object.toString().equals(IDs.resource)) {
-                                if (object.toString().equals(java)) {
-                                    ownsEditions[Check.DataType.JAVA.ordinal()] = true;
-                                } else if (object.toString().equals(bedrock)) {
-                                    ownsEditions[Check.DataType.BEDROCK.ordinal()] = true;
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
-            });
-        } else if (!IDs.enabled) { // No DRM
-            if (Bukkit.getMotd().contains(Register.pluginName)) { // Test Server
+            if (false) { // Check other jars
                 freeEdition = false;
 
                 for (CheckEnums.HackType hackType : CheckEnums.HackType.values()) {
                     ownedChecks[hackType.ordinal()] = true;
                 }
-                for (Check.DataType dataType : Check.DataType.values()) {
-                    ownsEditions[dataType.ordinal()] = true;
-                }
-            } else {
-                if (!ownsEdition(Check.DataType.JAVA)
-                        || !ownsEdition(Check.DataType.BEDROCK)) { // Cloud
-                    String[] editions = CloudConnections.getOwnedEditions();
+                String java = IDs.builtByBit ? "11196" : "350",
+                        bedrock = IDs.builtByBit ? "12832" : "3600";
 
-                    if (editions != null) {
-                        for (String edition : editions) {
-                            for (Check.DataType dataType : Check.DataType.values()) {
-                                if (edition.equals(dataType.toString())) {
-                                    ownsEditions[dataType.ordinal()] = true;
-                                    disableFreeEdition();
+                if (IDs.resource.equals(java)) {
+                    ownsEditions[Check.DataType.JAVA.ordinal()] = true;
+                } else if (IDs.resource.equals(bedrock)) {
+                    ownsEditions[Check.DataType.BEDROCK.ordinal()] = true;
+                }
+                PluginBase.dataThread.executeIfUnknownThreadElseHere(() -> {
+                    String pluginsFolder = Register.plugin.getDataFolder().toString().replace(
+                            Register.pluginName,
+                            ""
+                    );
+                    File[] files = new File(pluginsFolder).listFiles();
+
+                    if (files != null) {
+                        String clazz = IDs.class.getCanonicalName();
+
+                        for (File file : files) {
+                            if (file.isFile()
+                                    && file.getName().endsWith(".jar")) {
+                                String path = file.getAbsolutePath();
+                                Object object = ReflectionUtils.getFieldFromJar(
+                                        path,
+                                        clazz,
+                                        "user"
+                                );
+
+                                if (object != null
+                                        && object.toString().equals(IDs.user)) {
+                                    object = ReflectionUtils.getFieldFromJar(
+                                            path,
+                                            clazz,
+                                            "resource"
+                                    );
+
+                                    if (object != null
+                                            && !object.toString().equals(IDs.resource)) {
+                                        if (object.toString().equals(java)) {
+                                            ownsEditions[Check.DataType.JAVA.ordinal()] = true;
+                                        } else if (object.toString().equals(bedrock)) {
+                                            ownsEditions[Check.DataType.BEDROCK.ordinal()] = true;
+                                        }
+                                    }
                                     break;
                                 }
                             }
                         }
                     }
+                });
+            } else {
+                if (!syn) {
+                    PluginBase.dataThread.executeIfUnknownThreadElseHere(() -> {
+                        String pluginsFolder = Register.plugin.getDataFolder().toString().replace(
+                                Register.pluginName,
+                                ""
+                        );
+
+                        for (File file : new File(pluginsFolder).listFiles()) {
+                            if (file.isFile()
+                                    && file.getName().endsWith(".jar")) {
+                                String clazz = IDs.class.getCanonicalName();
+                                Object object = ReflectionUtils.getFieldFromJar(
+                                        file.getAbsolutePath(),
+                                        clazz,
+                                        "user"
+                                );
+
+                                if (object != null
+                                        && object.toString().equals(IDs.user)) {
+                                    object = ReflectionUtils.getFieldFromJar(
+                                            file.getAbsolutePath(),
+                                            clazz,
+                                            "resource"
+                                    );
+
+                                    if (object != null
+                                            && !object.toString().equals(IDs.resource)) {
+                                        syn = true;
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    });
                 }
 
-                if (!freeEdition) { // Cloud success
+                if (false) {
+                    freeEdition = false;
+
                     for (CheckEnums.HackType hackType : CheckEnums.HackType.values()) {
                         ownedChecks[hackType.ordinal()] = true;
                     }
-                } else { // Cloud failure
-                    ownsEditions[Check.DataType.JAVA.ordinal()] = true;
+                    for (Check.DataType dataType : Check.DataType.values()) {
+                        ownsEditions[dataType.ordinal()] = true;
+                    }
+                } else {
+                    return judgeFromCloud();
+                }
+            }
+        } else if (!IDs.enabled) { // No DRM
+            return judgeFromCloud();
+        }
+        return false;
+    }
 
-                    for (CheckEnums.HackType hackType : CheckEnums.HackType.values()) {
-                        switch (hackType) {
-                            // Combat
-                            case KILL_AURA:
-                            case HIT_REACH:
-                                // Movement
-                            case SPEED_SIMULATION:
-                            case GRAVITY_SIMULATION:
-                                // World
-                            case BLOCK_REACH:
-                            case IMPOSSIBLE_ACTIONS:
-                                // Misc
-                            case AUTO_RESPAWN:
-                            case FAST_HEAL:
-                            case NO_SWING:
-                                ownedChecks[hackType.ordinal()] = true;
-                                break;
-                            default:
-                                ownedChecks[hackType.ordinal()] = false;
-                                break;
+    private static boolean judgeFromCloud() {
+        for (CheckEnums.HackType hackType : CheckEnums.HackType.values()) {
+            ownedChecks[hackType.ordinal()] = true;
+        }
+        if (Bukkit.getMotd().contains(Register.pluginName)) { // Test Server
+            freeEdition = false;
+            syn = true;
+
+            for (Check.DataType dataType : Check.DataType.values()) {
+                ownsEditions[dataType.ordinal()] = true;
+            }
+            return true;
+        } else {
+            String[] editions = CloudConnections.getOwnedEditions();
+
+            if (editions == null) { // Cloud failure
+                freeEdition = true;
+
+                for (Check.DataType dataType : Check.DataType.values()) {
+                    ownsEditions[dataType.ordinal()] = true;
+                }
+            } else { // Cloud success
+                for (Check.DataType dataType : Check.DataType.values()) {
+                    ownsEditions[dataType.ordinal()] = false;
+                }
+                for (String edition : editions) {
+                    for (Check.DataType dataType : Check.DataType.values()) {
+                        if (edition.equals(dataType.toString())) {
+                            ownsEditions[dataType.ordinal()] = true;
+                            freeEdition = false;
+                            break;
                         }
                     }
                 }
+
+                if (freeEdition) {
+                    for (Check.DataType dataType : Check.DataType.values()) {
+                        ownsEditions[dataType.ordinal()] = true;
+                    }
+                } else {
+                    return true;
+                }
             }
         }
+        return false;
     }
 
     public static boolean ownsCheck(CheckEnums.HackType hackType) {
@@ -276,9 +332,8 @@ public class PluginAddons {
         return ownsEditions[dataType.ordinal()];
     }
 
-    private static void disableFreeEdition() {
-        freeEdition = false;
-        Config.settings.create();
+    public static boolean isSyn() {
+        return syn || freeEdition;
     }
 
 }

@@ -5,6 +5,7 @@ import ai.idealistic.spartan.abstraction.check.Check;
 import ai.idealistic.spartan.abstraction.check.CheckEnums;
 import ai.idealistic.spartan.abstraction.check.CheckEnums.HackType;
 import ai.idealistic.spartan.abstraction.configuration.ConfigurationBuilder;
+import ai.idealistic.spartan.abstraction.configuration.implementation.Advanced;
 import ai.idealistic.spartan.abstraction.configuration.implementation.Messages;
 import ai.idealistic.spartan.abstraction.configuration.implementation.SQLFeature;
 import ai.idealistic.spartan.abstraction.configuration.implementation.Settings;
@@ -21,12 +22,14 @@ public class Config {
     public static final Settings settings = new Settings();
     public static final SQLFeature sql = new SQLFeature();
     public static final Messages messages = new Messages();
+    public static final Advanced advanced = new Advanced();
     public static final Compatibility compatibility = new Compatibility();
 
     public static final ConfigurationBuilder[] configurations = {
             settings,
             sql,
-            messages
+            messages,
+            advanced
     };
 
     // Separator

@@ -76,7 +76,14 @@ public class CloudConnections {
         } catch (Exception e) {
             CloudBase.throwError(e, "ownedEditions:GET");
         }
-        return null;
+        if (IDs.enabled) {
+            return new String[]{
+                    Check.DataType.JAVA.toString(),
+                    Check.DataType.BEDROCK.toString()
+            };
+        } else {
+            return null;
+        }
     }
 
     public static void executeDiscordWebhook(String webhook, UUID uuid, String name, int x, int y, int z, String type, String information) { // Once

@@ -1,11 +1,14 @@
 package ai.idealistic.spartan.utils.minecraft.world;
 
+import ai.idealistic.spartan.abstraction.data.PacketWorld;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.abstraction.world.ServerBlock;
 import ai.idealistic.spartan.abstraction.world.ServerLocation;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
 import ai.idealistic.spartan.utils.java.ReflectionUtils;
 import ai.idealistic.spartan.utils.minecraft.inventory.MaterialUtils;
+import lombok.experimental.UtilityClass;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -16,7 +19,17 @@ import org.bukkit.inventory.ItemStack;
 import java.util.HashSet;
 import java.util.Set;
 
+@UtilityClass
 public class BlockUtils {
+
+    public static final int[][] DIRS = {
+                    { 1,  0,  0},
+                    {-1,  0,  0},
+                    { 0,  0,  1},
+                    { 0,  0, -1},
+                    { 0,  1,  0},
+                    { 0, -1,  0}
+    };
 
     public static boolean blockDataExists = ReflectionUtils.classExists(
             "org.bukkit.block.data.BlockData"
@@ -1626,6 +1639,33 @@ public class BlockUtils {
         } else {
             return 0.6F;
         }
+    }
+
+    public static boolean isSurroundedByAir(Location loc) {
+        World world = loc.getWorld();
+        int x = loc.getBlockX();
+        int y = loc.getBlockY();
+        int z = loc.getBlockZ();
+        for (int[] d : DIRS) {
+            Block relative = world.getBlockAt(x + d[0], y + d[1], z + d[2]);
+            if (relative.getType() != Material.AIR) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean isSurroundedByAir(PacketWorld packetWorld, Location loc) {
+        World world = loc.getWorld();
+        int x = loc.getBlockX();
+        int y = loc.getBlockY();
+        int z = loc.getBlockZ();
+        for (int[] d : DIRS) {
+            if (packetWorld.getBlock(new Location(world, x + d[0], y + d[1], z + d[2])) != Material.AIR) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

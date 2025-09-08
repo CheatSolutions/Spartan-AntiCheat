@@ -1,9 +1,9 @@
 name: Spartan
 authors: [Evangelos Dedes @Vagdedes - Since 2016, pawsashatoy - Since 2024]
 main: ai.idealistic.spartan.Register
-version: 4.0.4.0
-website: https://www.idealistic.ai
-description: The intuitive solution when it comes to anti-cheat protection
+version: 4.0.6.0
+website: https://spartan.top
+description: The longest living Minecraft paid anti cheat!
 api-version: 1.13
 softdepend: [mcMMO, ProtocolSupport, VeinMiner, EcoEnchants, CustomEnchantsPlus,
              aSkyBlock, AdvancedAbilities, CrackShot, CrackShotPlus, CraftBook, GrapplingHook, ProtocolLib,

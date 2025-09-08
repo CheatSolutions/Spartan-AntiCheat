@@ -3,6 +3,8 @@ package ai.idealistic.spartan.listeners.protocol;
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.abstraction.world.ServerLocation;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
+import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.ListenerPriority;
@@ -29,11 +31,18 @@ public class ExplosionListener extends PacketAdapter {
         if (d.size() >= 3) {
             Player player = event.getPlayer();
             PlayerProtocol protocol = PluginBase.getProtocol(player);
+
+            if (!Config.settings.getBoolean("Important.bedrock_on_protocollib")
+                    && protocol.isBedrockPlayer()) {
+                return;
+            }
             Location l = new Location(player.getWorld(), d.get(0), d.get(1), d.get(2));
 
             if (ServerLocation.distanceSquared(l, protocol.getLocation()) < 10) {
-                protocol.getComponentY().explosionTick = true;
-                protocol.getComponentXZ().explosionTick = true;
+                CheckThread.run(() -> {
+                    protocol.getComponentY().explosionTick = true;
+                    protocol.getComponentXZ().explosionTick = true;
+                });
             }
         }
     }

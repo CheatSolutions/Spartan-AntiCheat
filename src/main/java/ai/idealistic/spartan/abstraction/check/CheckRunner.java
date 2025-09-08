@@ -14,6 +14,7 @@ import ai.idealistic.spartan.functionality.server.MultiVersion;
 import ai.idealistic.spartan.functionality.server.Permissions;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import ai.idealistic.spartan.functionality.server.TPS;
+import ai.idealistic.spartan.functionality.tracking.DetectionCharge;
 import ai.idealistic.spartan.utils.math.AlgebraUtils;
 import ai.idealistic.spartan.utils.minecraft.entity.PlayerUtils;
 import org.bukkit.GameMode;
@@ -95,6 +96,7 @@ public abstract class CheckRunner extends CheckProcess {
 
     final boolean canCall() {
         return !this.protocol.npc
+                && DetectionCharge.has()
                 && hackType.getCheck().isEnabled(this.protocol.getDataType(), this.protocol.getWorld().getName())
                 && (!cancelled || hackType.getCheck().handleCancelledEvents)
                 && (!v1_8 || this.protocol.getGameMode() != GameMode.SPECTATOR)

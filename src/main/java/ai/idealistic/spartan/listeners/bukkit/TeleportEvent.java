@@ -1,6 +1,7 @@
 package ai.idealistic.spartan.listeners.bukkit;
 
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -13,7 +14,7 @@ public class TeleportEvent implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void Teleport(PlayerTeleportEvent e) {
-        teleport(e.getPlayer(), false, e);
+        CheckThread.run(() -> teleport(e.getPlayer(), false, e));
     }
 
     public static void teleport(Player player, boolean packets, Object object) {
@@ -27,7 +28,7 @@ public class TeleportEvent implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void Respawn(PlayerRespawnEvent e) {
-        respawn(e.getPlayer(), false, e);
+        CheckThread.run(() -> respawn(e.getPlayer(), false, e));
     }
 
     public static void respawn(Player player, boolean packets, Object object) {

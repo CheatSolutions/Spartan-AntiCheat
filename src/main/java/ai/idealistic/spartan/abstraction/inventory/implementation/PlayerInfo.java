@@ -1,5 +1,6 @@
 package ai.idealistic.spartan.abstraction.inventory.implementation;
 
+import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.check.Check;
 import ai.idealistic.spartan.abstraction.check.CheckCancellation;
 import ai.idealistic.spartan.abstraction.check.CheckEnums;
@@ -17,6 +18,7 @@ import ai.idealistic.spartan.functionality.moderation.clickable.ClickableMessage
 import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.Permissions;
 import ai.idealistic.spartan.functionality.server.PluginBase;
+import ai.idealistic.spartan.functionality.tracking.DetectionCharge;
 import ai.idealistic.spartan.functionality.tracking.ResearchEngine;
 import ai.idealistic.spartan.utils.java.OverflowMap;
 import ai.idealistic.spartan.utils.java.TimeUtils;
@@ -33,6 +35,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerInfo extends InventoryMenu {
 
+    public static final Permission[] permissions = new Permission[]{Permission.MANAGE, Permission.INFO};
+
     private static final Cooldowns cooldowns = new Cooldowns(
             new OverflowMap<>(new ConcurrentHashMap<>(), 512)
     );
@@ -42,7 +46,7 @@ public class PlayerInfo extends InventoryMenu {
     };
 
     public PlayerInfo() {
-        super(menu, 45, new Permission[]{Permission.MANAGE, Permission.INFO});
+        super(menu, 45, permissions);
     }
 
     @Override
@@ -173,12 +177,10 @@ public class PlayerInfo extends InventoryMenu {
             }
         }
 
-        lore.add("");
-
         if (!added) {
+            lore.add("");
             lore.add("§7No useful information currently available.");
         }
-        lore.add("§7Click to §amanage checks§7.");
 
         // Separator
 
@@ -198,6 +200,9 @@ public class PlayerInfo extends InventoryMenu {
         if (!PluginAddons.ownsEdition(dataType)) {
             return dataType + " edition is not purchased";
         }
+        if (!DetectionCharge.has()) {
+            return "Detections need to be charged, run /" + Register.pluginName.toLowerCase() + " charge";
+        }
         String worldName = protocol.getWorld().getName();
         Check check = hackType.getCheck();
 
@@ -209,6 +214,8 @@ public class PlayerInfo extends InventoryMenu {
                 ? "Player has permission bypass"
                 : disabledCause != null
                 ? "Custom: " + disabledCause.getReason()
+                : DetectionCharge.isLow()
+                ? "Detections are low on charge, run /" + Register.pluginName.toLowerCase() + " charge"
                 : null;
     }
 
@@ -265,20 +272,8 @@ public class PlayerInfo extends InventoryMenu {
             protocol.sendImportantMessage("§2§l" + DiscordServer.url);
             protocol.bukkit().closeInventory();
         } else if (PluginAddons.isFreeEdition()) {
-            protocol.sendImportantMessage("§2§l" + PluginAddons.patreonURL);
+            protocol.sendImportantMessage("§2§l" + PluginAddons.pluginURL);
             protocol.bukkit().closeInventory();
-        } else {
-            if (!Permissions.has(protocol.bukkit(), Permission.MANAGE)) {
-                protocol.bukkit().closeInventory();
-                ClickableMessage.sendURL(
-                        protocol.bukkit(),
-                        Config.messages.getColorfulString("no_permission"),
-                        CommandExecution.support,
-                        DiscordServer.url
-                );
-            } else {
-                PluginBase.manageChecks.open(protocol);
-            }
         }
         return true;
     }

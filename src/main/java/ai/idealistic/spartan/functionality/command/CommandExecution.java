@@ -48,25 +48,24 @@ public class CommandExecution implements CommandExecutor {
             sender.sendMessage("");
             String command = "§2" + Register.pluginName + " AntiCheat";
 
-            sender.sendMessage(command);
             ClickableMessage.sendURL(
                     sender,
                     command,
                     "Click to learn more!",
-                    PluginAddons.patreonURL
+                    PluginAddons.pluginURL
             );
             if (documentation) {
                 ClickableMessage.sendURL(
                         sender,
                         "§8§l<> §7Required command argument",
                         "Click to learn more!",
-                        PluginAddons.patreonURL
+                        PluginAddons.pluginURL
                 );
                 ClickableMessage.sendURL(
                         sender,
                         "§8§l[] §7Optional command argument",
                         "Click to learn more!",
-                        PluginAddons.patreonURL
+                        PluginAddons.pluginURL
                 );
             }
             return true;
@@ -116,19 +115,43 @@ public class CommandExecution implements CommandExecutor {
                                     sender,
                                     "§cToggle Checks §7(Click)",
                                     "Click this command to toggle a check and its detections.",
-                                    "/" + Register.command + " manage-checks"
+                                    "/" + PluginAddons.synCommand
+                            );
+                            ClickableMessage.sendCommand(
+                                    sender,
+                                    "§cToggle Details §7(Click)",
+                                    "Click this command to toggle a check's detection details.",
+                                    "/" + PluginAddons.synCommand
                             );
                             ClickableMessage.sendCommand(
                                     sender,
                                     "§cToggle Preventions §7(Click)",
                                     "Click this command to toggle a check's preventions.",
-                                    "/" + Register.command + " manage-checks"
+                                    "/" + PluginAddons.synCommand
                             );
                             ClickableMessage.sendCommand(
                                     sender,
                                     "§cToggle Punishments §7(Click)",
                                     "Click this command to toggle a check's punishments.",
-                                    "/" + Register.command + " manage-checks"
+                                    "/" + PluginAddons.synCommand
+                            );
+                            ClickableMessage.sendCommand(
+                                    sender,
+                                    "§cToggle Detections §7(Click)",
+                                    "Click this command to toggle a check's specific detections.",
+                                    "/" + PluginAddons.synCommand
+                            );
+                            ClickableMessage.sendCommand(
+                                    sender,
+                                    "§cToggle Settings §7(Click)",
+                                    "Click this command to toggle general settings.",
+                                    "/" + PluginAddons.synCommand
+                            );
+                            ClickableMessage.sendCommand(
+                                    sender,
+                                    "§cView Statistics §7(Click)",
+                                    "Click this command to view the plugin's statistics.",
+                                    "/" + PluginAddons.synCommand
                             );
                         }
                         if (Permissions.has(protocol.bukkit(), Permission.USE_BYPASS)) {
@@ -307,8 +330,29 @@ public class CommandExecution implements CommandExecutor {
                 }
                 completeMessage(sender, "default");
             } else if (args.length == 1) {
-                if (isPlayer && args[0].equalsIgnoreCase("Manage-Checks")) {
-                    PluginBase.manageChecks.open(protocol);
+                if (isPlayer && args[0].equalsIgnoreCase("Syn")) {
+                    PluginBase.synMenu.open(protocol);
+                } else if (args[0].equalsIgnoreCase("Charge")) {
+                    if (isPlayer && !Permissions.isStaff(protocol.bukkit())) {
+                        ClickableMessage.sendURL(
+                                sender,
+                                Config.messages.getColorfulString("no_permission"),
+                                support,
+                                DiscordServer.url
+                        );
+                        return true;
+                    }
+                    if (PluginAddons.isFreeEdition()) {
+                        PluginBase.chargeMenu.open(protocol);
+                    } else {
+                        ClickableMessage.sendURL(
+                                sender,
+                                "You have the permium edition/s of the " + Register.pluginName + " anti-cheat.",
+                                support,
+                                DiscordServer.url
+                        );
+                    }
+
                 } else if (args[0].equalsIgnoreCase("Panic")) {
                     if (isPlayer && !Permissions.has(protocol.bukkit(), Permission.MANAGE)) {
                         ClickableMessage.sendURL(

@@ -41,7 +41,7 @@ class ServerSchedulers {
                                     runnable);
                 }
             } else {
-                runnable.run();
+                Bukkit.getGlobalRegionScheduler().run(Register.plugin, consumer -> runnable.run());
             }
         }
     }

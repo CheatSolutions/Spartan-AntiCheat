@@ -141,4 +141,5 @@ public class ConfigUtils {
         Register.plugin.saveConfig();
         Register.plugin.reloadConfig();
     }
+
 }

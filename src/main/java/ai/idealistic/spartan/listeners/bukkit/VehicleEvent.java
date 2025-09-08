@@ -1,6 +1,7 @@
 package ai.idealistic.spartan.listeners.bukkit;
 
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -15,24 +16,28 @@ public class VehicleEvent implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public static void enter(VehicleEnterEvent e) {
         if (!e.isCancelled()) {
-            Entity entity = e.getEntered();
+            CheckThread.run(() -> {
+                Entity entity = e.getEntered();
 
-            if (entity instanceof Player) {
-                PlayerProtocol p = PluginBase.getProtocol((Player) entity, true);
-                p.executeRunners(e.isCancelled(), e);
-            }
+                if (entity instanceof Player) {
+                    PlayerProtocol p = PluginBase.getProtocol((Player) entity, true);
+                    p.executeRunners(e.isCancelled(), e);
+                }
+            });
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public static void exit(VehicleExitEvent e) {
         if (!e.isCancelled()) {
-            Entity en = e.getExited();
+            CheckThread.run(() -> {
+                Entity en = e.getExited();
 
-            if (en instanceof Player) {
-                PlayerProtocol p = PluginBase.getProtocol((Player) en, true);
-                p.executeRunners(e.isCancelled(), e);
-            }
+                if (en instanceof Player) {
+                    PlayerProtocol p = PluginBase.getProtocol((Player) en, true);
+                    p.executeRunners(e.isCancelled(), e);
+                }
+            });
         }
     }
 

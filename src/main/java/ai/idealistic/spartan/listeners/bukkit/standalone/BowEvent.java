@@ -1,6 +1,7 @@
 package ai.idealistic.spartan.listeners.bukkit.standalone;
 
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -17,7 +18,7 @@ public class BowEvent implements Listener {
 
         if (entity instanceof Player) {
             PlayerProtocol p = PluginBase.getProtocol((Player) entity, true);
-            p.executeRunners(e.isCancelled(), e);
+            CheckThread.run(() -> p.executeRunners(e.isCancelled(), e));
         }
     }
 
