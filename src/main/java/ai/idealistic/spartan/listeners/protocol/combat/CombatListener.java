@@ -73,7 +73,7 @@ public class CombatListener extends PacketAdapter {
                 }
                 if (target != null) {
                     Player targetFinal = target;
-                    CheckThread.run(() ->CombatEvent.use(
+                    CheckThread.run(() -> CombatEvent.use(
                             new PlayerUseEvent(
                                     event.getPlayer(),
                                     targetFinal,

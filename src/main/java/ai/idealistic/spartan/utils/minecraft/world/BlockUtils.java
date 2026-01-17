@@ -1,10 +1,10 @@
 package ai.idealistic.spartan.utils.minecraft.world;
 
-import ai.idealistic.spartan.abstraction.data.PacketWorld;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.abstraction.world.ServerBlock;
 import ai.idealistic.spartan.abstraction.world.ServerLocation;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
+import ai.idealistic.spartan.listeners.bukkit.standalone.ChunksEvent;
 import ai.idealistic.spartan.utils.java.ReflectionUtils;
 import ai.idealistic.spartan.utils.minecraft.inventory.MaterialUtils;
 import lombok.experimental.UtilityClass;
@@ -23,12 +23,12 @@ import java.util.Set;
 public class BlockUtils {
 
     public static final int[][] DIRS = {
-                    { 1,  0,  0},
-                    {-1,  0,  0},
-                    { 0,  0,  1},
-                    { 0,  0, -1},
-                    { 0,  1,  0},
-                    { 0, -1,  0}
+            {1, 0, 0},
+            {-1, 0, 0},
+            {0, 0, 1},
+            {0, 0, -1},
+            {0, 1, 0},
+            {0, -1, 0}
     };
 
     public static boolean blockDataExists = ReflectionUtils.classExists(
@@ -794,7 +794,7 @@ public class BlockUtils {
                     helper.add(Material.TWISTING_VINES_PLANT);
                     helper.add(Material.WEEPING_VINES);
                     helper.add(Material.WEEPING_VINES_PLANT);
-                    helper.add(Material.CHAIN);
+                    //helper.add(Material.CHAIN);
                     helper.add(Material.SOUL_LANTERN);
                 }
                 helper.add(Material.BELL);
@@ -1208,7 +1208,7 @@ public class BlockUtils {
                     if (MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_17)) {
                         helper.add(Material.LIGHTNING_ROD);
                     }
-                    helper.add(Material.CHAIN);
+                    //helper.add(Material.CHAIN);
                 }
                 helper.add(Material.HONEY_BLOCK);
             }
@@ -1304,7 +1304,8 @@ public class BlockUtils {
     }
 
     public static boolean isLiquid(Block block) {
-        return isLiquid(block.getType()) || block.isLiquid();
+        return isLiquid(new ServerBlock(block).getType())
+                || ChunksEvent.isLoaded(block) && block.isLiquid();
     }
 
     public static boolean isLiquid(Material m) {
@@ -1317,7 +1318,9 @@ public class BlockUtils {
     }
 
     public static boolean isWaterLogged(Block block) {
-        return blockDataExists && isWaterLogged(block.getBlockData());
+        return blockDataExists
+                && ChunksEvent.isLoaded(block)
+                && isWaterLogged(block.getBlockData());
     }
 
     public static boolean isWaterLogged(ServerBlock block) {
@@ -1334,7 +1337,7 @@ public class BlockUtils {
 
     public static boolean isLiquidOrWaterLogged(Block block, boolean lava) {
         return (isLiquid(block) || isWaterLogged(block))
-                && (lava || block.getType() != MaterialUtils.get("lava"));
+                && (lava || new ServerBlock(block).getType() != MaterialUtils.get("lava"));
     }
 
     public static boolean isLiquidOrWaterLogged(BlockData blockData, boolean lava) {
@@ -1550,7 +1553,7 @@ public class BlockUtils {
     }
 
     public static String blockToString(Block b) {
-        return toString(b.getType().toString());
+        return blockToString(new ServerBlock(b));
     }
 
     public static String blockToString(ServerBlock b) {
@@ -1647,7 +1650,8 @@ public class BlockUtils {
         int y = loc.getBlockY();
         int z = loc.getBlockZ();
         for (int[] d : DIRS) {
-            Block relative = world.getBlockAt(x + d[0], y + d[1], z + d[2]);
+            ServerBlock relative = new ServerBlock(world.getBlockAt(x + d[0], y + d[1], z + d[2]));
+
             if (relative.getType() != Material.AIR) {
                 return false;
             }
@@ -1655,13 +1659,14 @@ public class BlockUtils {
         return true;
     }
 
-    public static boolean isSurroundedByAir(PacketWorld packetWorld, Location loc) {
+    public static boolean isSurroundedByAir(PlayerProtocol protocol, Location loc) {
         World world = loc.getWorld();
         int x = loc.getBlockX();
         int y = loc.getBlockY();
         int z = loc.getBlockZ();
+
         for (int[] d : DIRS) {
-            if (packetWorld.getBlock(new Location(world, x + d[0], y + d[1], z + d[2])) != Material.AIR) {
+            if (new ServerLocation(world, x + d[0], y + d[1], z + d[2]).getBlock(protocol).getType() != Material.AIR) {
                 return false;
             }
         }

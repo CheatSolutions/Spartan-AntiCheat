@@ -347,7 +347,7 @@ public class CommandExecution implements CommandExecutor {
                     } else {
                         ClickableMessage.sendURL(
                                 sender,
-                                "You have the permium edition/s of the " + Register.pluginName + " anti-cheat.",
+                                "You have the premium edition/s of the " + Register.pluginName + " anti-cheat.",
                                 support,
                                 DiscordServer.url
                         );

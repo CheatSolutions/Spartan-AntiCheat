@@ -11,6 +11,10 @@ public class Floodgate {
 
     private static boolean classExists = false;
 
+    static {
+        reload();
+    }
+
     public static void reload() {
         classExists = ReflectionUtils.classExists(
                 "org.geysermc.floodgate.api.FloodgateApi"
@@ -18,7 +22,8 @@ public class Floodgate {
     }
 
     static boolean isBedrockPlayer(UUID uuid, String name) {
-        return Compatibility.CompatibilityType.FLOODGATE.isFunctional()
+        return uuid != null
+                && Compatibility.CompatibilityType.FLOODGATE.isFunctional()
                 && classExists
                 && FloodgateApi.getInstance().isFloodgatePlayer(uuid)
 

@@ -42,7 +42,7 @@ public class PacketWorld {
         return new ArrayList<>(this.query);
     }
 
-    public Material getBlock(Location location) {
+    public Material getBlockRaw(Location location) {
         for (ServerBlockChange change : this.query) {
             Location lL = change.position.toLocation(this.player.getWorld());
 
@@ -52,7 +52,15 @@ public class PacketWorld {
                 return change.getData();
             }
         }
+        return null;
+    }
 
+    public Material getBlock(Location location) {
+        Material raw = this.getBlockRaw(location);
+
+        if (raw != null) {
+            return raw;
+        }
         Block b = ChunksEvent.getBlockAsync(location);
         return (b == null) ? null : b.getType();
     }

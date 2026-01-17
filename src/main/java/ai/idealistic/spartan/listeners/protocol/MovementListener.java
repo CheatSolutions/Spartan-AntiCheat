@@ -68,6 +68,7 @@ public class MovementListener extends PacketAdapter {
             if (flag.equals(tpFlags.Z))
                 result.setZ(loc.getZ() + tp.getZ());
         }
+        p.setTeleportTick(true);
         p.setTeleport(result.clone());
     }
 
@@ -110,7 +111,7 @@ public class MovementListener extends PacketAdapter {
                 }
             }
             boolean legacy = ProtocolTools.isFlying(event, l, r);
-            if (c.toVector().distance(p.getFrom().toVector()) > 1e-5) {
+            if (c.toVector().distance(p.getFrom().toVector()) > 1e-5 && !p.isTeleportTick()) {
                 PlayerTickEvent tickEvent = new PlayerTickEvent(p, legacy, onGround).build();
                 MovementEvent.tick(tickEvent);
                 if (tickEvent.getDelay() > 65) {
@@ -121,11 +122,11 @@ public class MovementListener extends PacketAdapter {
                 if (p.isDesync() && tickEvent.getDelay() > 40 && tickEvent.getDelay() < 60) {
                     p.transactionVl += (p.isBlatantDesync() ? 2 : 1);
                     if (p.transactionVl > 40
-                                    && !p.isAFK()) {
+                            && !p.isAFK()) {
                         AwarenessNotifications.optionallySend(player.getName()
-                                        + " moves faster than the transaction response ("
-                                        + tickEvent.getDelay() + "ms > "
-                                        + (System.currentTimeMillis() - p.transactionTime) + "ms).");
+                                + " moves faster than the transaction response ("
+                                + tickEvent.getDelay() + "ms > "
+                                + (System.currentTimeMillis() - p.transactionTime) + "ms).");
                         //p.teleport(p.getLocation());
                         //event.setCancelled(true);
                         //return;
@@ -218,6 +219,7 @@ public class MovementListener extends PacketAdapter {
                 if (p.flyingTicks > 0) {
                     p.flyingTicks--;
                 }
+                p.setTeleportTick(false);
             } else {
                 p.executeRunners(
                         event.isCancelled(),

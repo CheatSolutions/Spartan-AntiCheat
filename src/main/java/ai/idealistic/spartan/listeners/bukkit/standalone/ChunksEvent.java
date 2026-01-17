@@ -46,6 +46,14 @@ public class ChunksEvent implements Listener {
         return false;
     }
 
+    public static boolean isLoaded(Block block) {
+        return isLoaded(
+                block.getWorld(),
+                block.getX() >> 4,
+                block.getZ() >> 4
+        );
+    }
+
     // Separator
 
     @EventHandler(priority = EventPriority.HIGHEST)

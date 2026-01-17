@@ -117,7 +117,7 @@ public class OverflowMap<K, V> implements Map<K, V> {
 
     @Override
     public V computeIfPresent(K key,
-                             @NonNull BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+                              @NonNull BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         V oldValue;
         if ((oldValue = get(key)) != null) {
@@ -154,7 +154,7 @@ public class OverflowMap<K, V> implements Map<K, V> {
     @Override
     public V merge(K key, @NonNull V value,
                    @NonNull BiFunction<? super V, ? super V,
-                   ? extends V> remappingFunction) {
+                           ? extends V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         Objects.requireNonNull(value);
         V oldValue = get(key);

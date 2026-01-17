@@ -333,10 +333,10 @@ public class AxisAlignedBB {
         if (bb == null) return false;
 
         return this.minX == bb.minX &&
-                        this.minY == bb.minY &&
-                        this.minZ == bb.minZ &&
-                        this.maxX == bb.maxX &&
-                        this.maxY == bb.maxY &&
-                        this.maxZ == bb.maxZ;
+                this.minY == bb.minY &&
+                this.minZ == bb.minZ &&
+                this.maxX == bb.maxX &&
+                this.maxY == bb.maxY &&
+                this.maxZ == bb.maxZ;
     }
 }

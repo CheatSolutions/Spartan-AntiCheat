@@ -115,8 +115,7 @@ public class PlayerProtocol {
             lagTick,
             oldClickTime,
             soulSandWater,
-            magmaCubeWater,
-            lastVelocity;
+            magmaCubeWater;
     private long
             lastInteraction,
             lastFlight,
@@ -126,7 +125,7 @@ public class PlayerProtocol {
     private ComponentXZ componentXZ;
     private Vector clampVector;
     private final Map<PotionEffectType, ExtendedPotionEffect> potionEffects;
-    private boolean afk, cinematic;
+    private boolean afk, cinematic, teleportTick;
     private final List<Integer> sensitivity = new EvictingList<>(14);
     private final SensitivityProcessor sensitivityProcessor = new SensitivityProcessor(this);
     private final CinematicComponent cinematicComponent = new CinematicComponent(this);
@@ -195,6 +194,8 @@ public class PlayerProtocol {
         this.nearbyEntities = new Entity[0];
         this.maxNearbyEntitiesCoordinate = new double[3];
         this.runners = new CheckRunner[CheckEnums.HackType.values().length];
+        this.teleportTick = true;
+        this.cinematic = false;
 
         for (CheckEnums.HackType hackType : CheckEnums.HackType.values()) {
             try {
@@ -648,7 +649,7 @@ public class PlayerProtocol {
                     )
             );
 
-            if (BlockUtils.isFullSolid(location.getBlock().getType())) {
+            if (BlockUtils.isFullSolid(location.getBlock(this).getType())) {
                 return location.getBlockLocation();
             }
         }
@@ -823,9 +824,9 @@ public class PlayerProtocol {
         Location location = this.getLocation();
         ServerLocation locationP1 = new ServerLocation(location.clone().add(0, 1, 0));
 
-        if (BlockUtils.isSolid(locationP1.getBlock().getType())
-                && !(BlockUtils.areWalls(locationP1.getBlock().getType())
-                || BlockUtils.canClimb(locationP1.getBlock().getType(), false))) {
+        if (BlockUtils.isSolid(locationP1.getBlock(this).getType())
+                && !(BlockUtils.areWalls(locationP1.getBlock(this).getType())
+                || BlockUtils.canClimb(locationP1.getBlock(this).getType(), false))) {
             return false;
         }
         World world = this.getWorld();
@@ -836,7 +837,7 @@ public class PlayerProtocol {
             ServerLocation loopLocation = new ServerLocation(
                     location.clone().add(0.0, -(startY - progressiveY), 0.0)
             );
-            Material material = loopLocation.getBlock().getType();
+            Material material = loopLocation.getBlock(this).getType();
 
             if (iterations != PlayerUtils.chunk
                     && (BlockUtils.canClimb(material, false)

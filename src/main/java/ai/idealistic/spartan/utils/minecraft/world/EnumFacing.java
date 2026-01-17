@@ -22,8 +22,7 @@ public enum EnumFacing {
     /**
      * Ordering index for D-U-N-S-W-E
      * -- GETTER --
-     *  Get the Index of this Facing (0-5). The order is D-U-N-S-W-E
-
+     * Get the Index of this Facing (0-5). The order is D-U-N-S-W-E
      */
     @Getter
     private final int index;
@@ -36,8 +35,7 @@ public enum EnumFacing {
     /**
      * Oredering index for the HORIZONTALS field (S-W-N-E)
      * -- GETTER --
-     *  Get the index of this horizontal facing (0-3). The order is S-W-N-E
-
+     * Get the index of this horizontal facing (0-3). The order is S-W-N-E
      */
     @Getter
     private final int horizontalIndex;
@@ -47,7 +45,7 @@ public enum EnumFacing {
     private final Axis axis;
     /**
      * -- GETTER --
-     *  Get the AxisDirection of this Facing.
+     * Get the AxisDirection of this Facing.
      */
     @Getter
     private final AxisDirection axisDirection;
@@ -55,8 +53,7 @@ public enum EnumFacing {
     /**
      * Normalized Vector that points in the direction of this Facing
      * -- GETTER --
-     *  Get a normalized Vector that points in the direction of this Facing.
-
+     * Get a normalized Vector that points in the direction of this Facing.
      */
     @Getter
     private final Vec3i directionVec;

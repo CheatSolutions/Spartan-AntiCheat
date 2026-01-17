@@ -63,7 +63,7 @@ public class BackgroundProtocolLib {
         p.addPacketListener(new UseEntityListener());
 
         if (PlayerUtils.trident) {
-            p.addPacketListener(new TridentListener());
+            p.addPacketListener(new HandUseListener());
         }
         //p.addPacketListener(new PacketDebug());
     }

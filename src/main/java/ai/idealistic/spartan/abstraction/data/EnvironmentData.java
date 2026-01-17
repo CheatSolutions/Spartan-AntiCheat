@@ -45,70 +45,74 @@ public class EnvironmentData {
             for (int dy = -2; dy <= 2; ++dy) {
                 for (int dz = -2; dz <= 2; ++dz) {
                     boolean h = Math.abs(dx) < 2 && Math.abs(dz) < 2;
+                    Material material = new ServerLocation(protocol.getWorld(), x + (double) dx * 0.3, y + (double) dy * 0.5, z + (double) dz * 0.3).getBlock(
+                            protocol
+                    ).getTypeOrNull();
+                    Material materialWide = new ServerLocation(protocol.getWorld(), x + (double) dx * 0.5, y + (double) (dy * 0.5) - 0.3, z + (double) dz * 0.5).getBlock(
+                            protocol
+                    ).getTypeOrNull();
+                    Material materialTop = new ServerLocation(protocol.getWorld(), x + (double) dx * 0.5, y + (double) (dy * 0.5) + 1.0, z + (double) dz * 0.5).getBlock(
+                            protocol
+                    ).getTypeOrNull();
+                    Material materialFrom = new ServerLocation(protocol.getWorld(), x + (double) dx * 0.3, y + (double) dy * 0.5, z + (double) dz * 0.3).getBlock(
+                            protocol
+                    ).getTypeOrNull();
+
                     ServerBlock b = new ServerLocation(
                             new Location(protocol.getWorld(), x + (double) dx * 0.3, y + (double) dy * 0.5, z + (double) dz * 0.3)
                     ).getBlock();
-                    Material material = protocol.packetWorld.getBlock(
-                            new Location(protocol.getWorld(), x + (double) dx * 0.3, y + (double) dy * 0.5, z + (double) dz * 0.3)
-                    );
-                    Material materialWide = protocol.packetWorld.getBlock(
-                            new Location(protocol.getWorld(), x + (double) dx * 0.5, y + (double) (dy * 0.5) - 0.3, z + (double) dz * 0.5)
-                    );
-                    Material materialTop = protocol.packetWorld.getBlock(
-                            new Location(protocol.getWorld(), x + (double) dx * 0.5, y + (double) (dy * 0.5) + 1.0, z + (double) dz * 0.5)
-                    );
-                    Material materialFrom = protocol.packetWorld.getBlock(
-                            new Location(protocol.getWorld(), x + (double) dx * 0.3, y + (double) dy * 0.5, z + (double) dz * 0.3)
-                    );
-                    Material m2 = b.getType();
-                    if (material == null || materialFrom == null || m2 == null) return;
 
-                    if ((BlockUtils.areHoneyBlocks(material)
+                    if (material != null
+                            && (BlockUtils.areHoneyBlocks(material)
                             || BlockUtils.areBeds(material)
                             || BlockUtils.areSlimeBlocks(material))) {
                         this.slime = true;
                     }
-                    if (Math.abs(dx) < 2
+                    if (material != null
+                            && Math.abs(dx) < 2
                             && Math.abs(dz) < 2
                             && (BlockUtils.areInteractiveBushes(material)
                             || BlockUtils.areBeds(material)
                             || BlockUtils.isPowderSnow(material))) {
                         this.jumpModify = true;
                     }
-                    if (BlockUtils.canClimb(material, false) || BlockUtils.canClimb(materialTop, false)) {
+                    if (material != null && BlockUtils.canClimb(material, false)
+                            || materialTop != null && BlockUtils.canClimb(materialTop, false)) {
                         this.climb = true;
                     }
                     if (Math.abs(dy) < 2 && h
-                            && (BlockUtils.isPowderSnow(material)
-                            || (BlockUtils.isPowderSnow(materialTop)
-                            || BlockUtils.areHoneyBlocks(material)
-                            || BlockUtils.areWebs(material) || BlockUtils.areWebs(materialTop)
-                            || BlockUtils.areInteractiveBushes(material)
-                            || BlockUtils.areInteractiveBushes(materialTop)))) {
+                            && (material != null && BlockUtils.isPowderSnow(material)
+                            || (materialTop != null && BlockUtils.isPowderSnow(materialTop)
+                            || material != null && BlockUtils.areHoneyBlocks(material)
+                            || material != null && BlockUtils.areWebs(material)
+                            || materialTop != null && BlockUtils.areWebs(materialTop)
+                            || material != null && BlockUtils.areInteractiveBushes(material)
+                            || materialTop != null && BlockUtils.areInteractiveBushes(materialTop)))) {
                         this.glide = true;
                     }
-                    if (!BlockUtils.canClimb(material, false) &&
-                            (BlockUtils.isSemiSolid(material)
-                                    || BlockUtils.isSemiSolid(materialFrom)
-                                    || BlockUtils.isSemiSolid(materialWide)
-                                    || BlockUtils.areWalls(materialFrom)
-                                    || BlockUtils.areCobbleWalls(materialFrom)
-                                    || BlockUtils.areSlimeBlocks(material)
-                                    || BlockUtils.areHoneyBlocks(material)
-                                    || BlockUtils.areWebs(material)
-                                    || BlockUtils.areWebs(materialTop))) {
+                    if (material != null
+                            && !BlockUtils.canClimb(material, false)
+                            && (BlockUtils.isSemiSolid(material)
+                            || materialFrom != null && BlockUtils.isSemiSolid(materialFrom)
+                            || BlockUtils.isSemiSolid(materialWide)
+                            || materialFrom != null && BlockUtils.areWalls(materialFrom)
+                            || materialFrom != null && BlockUtils.areCobbleWalls(materialFrom)
+                            || BlockUtils.areSlimeBlocks(material)
+                            || BlockUtils.areHoneyBlocks(material)
+                            || BlockUtils.areWebs(material)
+                            || materialTop != null && BlockUtils.areWebs(materialTop))) {
                         this.semi = true;
                     }
-                    if (MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_13)
-                            && (material.equals(Material.BUBBLE_COLUMN) || m2.equals(Material.BUBBLE_COLUMN))) {
+                    if (material != null
+                            && MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_13)
+                            && material.equals(Material.BUBBLE_COLUMN)) {
                         this.bubble = true;
                     }
                     if (BlockUtils.isLiquidOrWaterLogged(b, true)
-                            || BlockUtils.isLiquid(protocol.packetWorld.getBlock(
-                            new Location(protocol.getWorld(), x + (double) dx * 0.3, y, z + (double) dz * 0.3)
-                    ))
-                            || BlockUtils.isLiquid(material)
-                            || BlockUtils.isLiquid(m2)
+                            || BlockUtils.isLiquid(new ServerLocation(protocol.getWorld(), x + (double) dx * 0.3, y, z + (double) dz * 0.3).getBlock(
+                            protocol
+                    ).getType())
+                            || material != null && BlockUtils.isLiquid(material)
                             || BlockUtils.isWaterLogged(b)) {
 
                         this.liquid = true;
@@ -128,39 +132,46 @@ public class EnvironmentData {
                             }
                         }
                     }
-                    if (BlockUtils.areIceBlocks(material)) {
+                    if (material != null && BlockUtils.areIceBlocks(material)) {
                         this.ice = true;
                     }
-                    {
-                        double xF = protocol.getFromLocation().getX();
-                        double yF = protocol.getFromLocation().getY();
-                        double zF = protocol.getFromLocation().getZ();
-                        Material materialBig = protocol.packetWorld.getBlock(
-                                new Location(protocol.getWorld(), x + (double) dx,
-                                        y + (double) dy, z + (double) dz)
-                        );
-                        Material materialBig2 = protocol.packetWorld.getBlock(
-                                new Location(protocol.getWorld(),
-                                        xF + (double) dx, yF + (double) dy - 1, zF + (double) dz)
-                        );
-                        Material materialBigFrom = protocol.packetWorld.getBlock(
-                                new Location(protocol.getWorld(),
-                                        xF + (double) dx, yF + (double) dy + 0.5, zF + (double) dz)
-                        );
-                        if (materialBig == null) return;
-                        if ((BlockUtils.areHoneyBlocks(materialBig)
-                                || BlockUtils.areBeds(materialBig)
-                                || BlockUtils.areSlimeBlocks(materialBigFrom)
-                                || BlockUtils.areSlimeBlocks(materialBig2)
-                                || BlockUtils.areSlimeBlocks(materialBig))) {
-                            protocol.slime0Tick = 3;
-                        }
-                        if (protocol.slime0Tick > 0) {
-                            protocol.slime0Tick--;
-                            this.slimeHeight = true;
-                            this.slimeWide = true;
-                            this.slime = true;
-                        }
+                    double xF = protocol.getFromLocation().getX();
+                    double yF = protocol.getFromLocation().getY();
+                    double zF = protocol.getFromLocation().getZ();
+                    Material materialBig = new ServerLocation(protocol.getWorld(), x + (double) dx,
+                            y + (double) dy, z + (double) dz).getBlock(
+                            protocol
+                    ).getTypeOrNull();
+
+                    if (materialBig != null
+                            && (BlockUtils.areHoneyBlocks(materialBig)
+                            || BlockUtils.areBeds(materialBig)
+                            || BlockUtils.areSlimeBlocks(materialBig))) {
+                        protocol.slime0Tick = 3;
+                    }
+                    Material materialBig2 = new ServerLocation(protocol.getWorld(),
+                            xF + (double) dx, yF + (double) dy - 1, zF + (double) dz).getBlock(
+                            protocol
+                    ).getTypeOrNull();
+
+                    if (materialBig2 != null
+                            && BlockUtils.areSlimeBlocks(materialBig2)) {
+                        protocol.slime0Tick = 3;
+                    }
+                    Material materialBigFrom = new ServerLocation(protocol.getWorld(),
+                            xF + (double) dx, yF + (double) dy + 0.5, zF + (double) dz).getBlock(
+                            protocol
+                    ).getTypeOrNull();
+
+                    if (materialBigFrom != null
+                            && BlockUtils.areSlimeBlocks(materialBigFrom)) {
+                        protocol.slime0Tick = 3;
+                    }
+                    if (protocol.slime0Tick > 0) {
+                        protocol.slime0Tick--;
+                        this.slimeHeight = true;
+                        this.slimeWide = true;
+                        this.slime = true;
                     }
                 }
             }
@@ -187,11 +198,9 @@ public class EnvironmentData {
 
                         if (type == Material.SOUL_SAND) {
                             protocol.soulSandWater = System.currentTimeMillis();
-                            protocol.lastVelocity = System.currentTimeMillis();
                             return true;
                         } else if (type == MAGMA_BLOCK) {
                             protocol.magmaCubeWater = System.currentTimeMillis();
-                            protocol.lastVelocity = System.currentTimeMillis();
                             return true;
                         } else if (BlockUtils.isSolid(type)) {
                             if (!block.isWaterLogged()) {

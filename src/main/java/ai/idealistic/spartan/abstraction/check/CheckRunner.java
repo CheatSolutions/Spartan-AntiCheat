@@ -1,5 +1,6 @@
 package ai.idealistic.spartan.abstraction.check;
 
+import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.compatibility.Compatibility;
 import ai.idealistic.spartan.compatibility.manual.abilities.ItemsAdder;
@@ -28,7 +29,7 @@ public abstract class CheckRunner extends CheckProcess {
     private static final boolean v1_8 = MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_8);
 
     final long creation;
-    private final Collection<CheckCancellation> disableCauses, silentCauses;
+    private final Map<Integer, CheckCancellation> disableCauses, silentCauses;
     private boolean cancelled;
     private final Map<String, CheckDetection> detections;
 
@@ -36,8 +37,8 @@ public abstract class CheckRunner extends CheckProcess {
         super(hackType, protocol);
         this.creation = System.currentTimeMillis();
         this.detections = new ConcurrentHashMap<>(2);
-        this.disableCauses = Collections.synchronizedList(new ArrayList<>(1));
-        this.silentCauses = Collections.synchronizedList(new ArrayList<>(1));
+        this.disableCauses = new ConcurrentHashMap<>(1);
+        this.silentCauses = new ConcurrentHashMap<>(1);
     }
 
     // Detections
@@ -95,20 +96,97 @@ public abstract class CheckRunner extends CheckProcess {
     // Separator
 
     final boolean canCall() {
-        return !this.protocol.npc
-                && DetectionCharge.has()
-                && hackType.getCheck().isEnabled(this.protocol.getDataType(), this.protocol.getWorld().getName())
-                && (!cancelled || hackType.getCheck().handleCancelledEvents)
-                && (!v1_8 || this.protocol.getGameMode() != GameMode.SPECTATOR)
-                && Attributes.getAmount(this.protocol, Attributes.GENERIC_SCALE) == Double.MIN_VALUE
-                && PluginAddons.ownsCheck(this.hackType)
-                && PluginAddons.ownsEdition(this.protocol.getDataType());
+        StringBuilder builder = new StringBuilder();
+
+        if (this.protocol.npc) {
+            builder.append("Player was determined to be an NPC");
+        }
+        if (!DetectionCharge.has()) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append("Detections need to be charged, run /")
+                    .append(Register.pluginName.toLowerCase())
+                    .append(" charge");
+        }
+        String world = this.protocol.getWorld().getName();
+
+        if (!hackType.getCheck().isEnabled(this.protocol.getDataType(), world)) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append("Check is disabled in the world '")
+                    .append(world)
+                    .append("' or player's edition");
+        }
+        if (cancelled && !hackType.getCheck().handleCancelledEvents) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append("Event is cancelled and check does not handle cancelled events");
+        }
+        if (v1_8 && this.protocol.getGameMode() == GameMode.SPECTATOR) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append("Player is in spectator mode");
+        }
+        if (Attributes.getAmount(this.protocol, Attributes.GENERIC_SCALE) != Double.MIN_VALUE) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append("Player has a scale attribute applied");
+        }
+        if (!PluginAddons.ownsCheck(this.hackType)) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append("Check '")
+                    .append(this.hackType.getCheck().getName())
+                    .append("' is not owned");
+        }
+        if (!PluginAddons.ownsEdition(this.protocol.getDataType())) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append("Edition '")
+                    .append(this.protocol.getDataType().toString())
+                    .append("' of the check '")
+                    .append(this.hackType.getCheck().hackType.toString())
+                    .append("' is not owned");
+        }
+        if (builder.length() > 0) {
+            this.addInformationalDisableCause(builder.toString());
+            return false;
+        } else {
+            return true;
+        }
     }
 
     final boolean canCancel() {
-        return (System.currentTimeMillis() - this.creation) > TPS.maximum * TPS.tickTime
-                && !ProtocolLib.isTemporary(this.protocol.bukkit())
-                && !Permissions.isBypassing(this.protocol.bukkit(), hackType);
+        StringBuilder builder = new StringBuilder();
+
+        if ((System.currentTimeMillis() - this.creation) <= TPS.maximum * TPS.tickTime) {
+            builder.append("Check ran too quickly after creation");
+        }
+        if (ProtocolLib.isTemporary(this.protocol.bukkit())) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append("Player is temporary");
+        }
+        if (Permissions.isBypassing(this.protocol.bukkit(), hackType)) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append("Player is bypassing");
+        }
+        if (builder.length() > 0) {
+            this.addInformationalDisableCause(builder.toString());
+            return false;
+        } else {
+            return true;
+        }
     }
 
     public final List<String> getEvidence() {
@@ -128,7 +206,10 @@ public abstract class CheckRunner extends CheckProcess {
 
     // Causes
 
-    private CheckCancellation getLastCause(Collection<CheckCancellation> collection) {
+    private CheckCancellation getLastCause(
+            Collection<CheckCancellation> collection,
+            boolean informational
+    ) {
         CheckCancellation lastCause = null;
         Iterator<CheckCancellation> iterator = collection.iterator();
 
@@ -136,6 +217,10 @@ public abstract class CheckRunner extends CheckProcess {
             CheckCancellation cause = iterator.next();
 
             if (cause.hasExpired()) {
+                if (informational
+                        && cause.isInformational()) {
+                    lastCause = cause;
+                }
                 iterator.remove();
             } else {
                 lastCause = cause;
@@ -145,8 +230,8 @@ public abstract class CheckRunner extends CheckProcess {
         return lastCause;
     }
 
-    public final CheckCancellation getDisableCause() {
-        CheckCancellation disableCause = this.getLastCause(this.disableCauses);
+    public final CheckCancellation getDisableCause(boolean informational) {
+        CheckCancellation disableCause = this.getLastCause(this.disableCauses.values(), informational);
 
         if (disableCause == null) {
             return MythicMobs.is(this.protocol)
@@ -164,19 +249,30 @@ public abstract class CheckRunner extends CheckProcess {
     }
 
     public final CheckCancellation getSilentCause() {
-        return this.getLastCause(this.silentCauses);
+        return this.getLastCause(this.silentCauses.values(), false);
+    }
+
+    public final void addInformationalDisableCause(String reason) {
+        CheckCancellation cc = new CheckCancellation(reason, null, -1);
+        this.disableCauses.put(cc.hashCode(), cc);
+        PluginBase.playerInfo.refresh(this.protocol.bukkit().getName());
     }
 
     public final void addDisableCause(String reason, String pointer, int ticks) {
         if (reason == null) {
             reason = this.hackType.getCheck().getName();
         }
-        this.disableCauses.add(new CheckCancellation(reason, pointer, ticks));
+        CheckCancellation cc = new CheckCancellation(reason, pointer, Math.abs(ticks));
+        this.disableCauses.put(cc.hashCode(), cc);
         PluginBase.playerInfo.refresh(this.protocol.bukkit().getName());
     }
 
     public final void addSilentCause(String reason, String pointer, int ticks) {
-        this.silentCauses.add(new CheckCancellation(reason, pointer, ticks));
+        if (reason == null) {
+            reason = this.hackType.getCheck().getName();
+        }
+        CheckCancellation cc = new CheckCancellation(reason, pointer, ticks);
+        this.silentCauses.put(cc.hashCode(), cc);
         PluginBase.playerInfo.refresh(this.protocol.bukkit().getName());
     }
 

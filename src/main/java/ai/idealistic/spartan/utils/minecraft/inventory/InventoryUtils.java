@@ -21,13 +21,15 @@ public class InventoryUtils {
 
     public static void add(Inventory inv, String name, List<String> lore, ItemStack item, int slot) {
         ItemMeta am = item.getItemMeta();
-        am.setDisplayName(name);
 
-        if (lore != null) {
-            am.setLore(lore);
+        if (am != null) {
+            am.setDisplayName(name);
+
+            if (lore != null) {
+                am.setLore(lore);
+            }
+            item.setItemMeta(am);
         }
-        item.setItemMeta(am);
-
         if (slot != -1) {
             inv.setItem(slot, item);
         } else {
@@ -37,12 +39,15 @@ public class InventoryUtils {
 
     public static ItemStack get(String name, ArrayList<String> lore, ItemStack item) {
         ItemMeta am = item.getItemMeta();
-        am.setDisplayName(name);
 
-        if (lore != null) {
-            am.setLore(lore);
+        if (am != null) {
+            am.setDisplayName(name);
+
+            if (lore != null) {
+                am.setLore(lore);
+            }
+            item.setItemMeta(am);
         }
-        item.setItemMeta(am);
         return item;
     }
 

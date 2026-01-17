@@ -54,16 +54,18 @@ public class StatisticsMath {
     public double getMin(final Collection<? extends Number> collection) {
         double min = Double.MAX_VALUE;
 
-        for (final Number number : collection){
+        for (final Number number : collection) {
             min = Math.min(min, number.doubleValue());
         }
 
         return min;
     }
+
     public static float getGCD(double s) {
         float f1 = (float) ((float) s * 0.6 + 0.2);
         return f1 * f1 * f1 * 8.0F;
     }
+
     public static float getGCDValue(double s) {
         return getGCD(s) * 0.15F;
     }
@@ -294,7 +296,6 @@ public class StatisticsMath {
     /**
      * @param - The collection of numbers you want analyze
      * @return - A pair of the high and low outliers
-     *
      * @See - https://en.wikipedia.org/wiki/Outlier
      */
     public Pair<List<Double>, List<Double>> getOutliers(final Collection<? extends Number> collection) {
@@ -315,8 +316,7 @@ public class StatisticsMath {
         for (final Double value : values) {
             if (value < lowThreshold) {
                 tuple.getX().add(value);
-            }
-            else if (value > highThreshold) {
+            } else if (value > highThreshold) {
                 tuple.getY().add(value);
             }
         }

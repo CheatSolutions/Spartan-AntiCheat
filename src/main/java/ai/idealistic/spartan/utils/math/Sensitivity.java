@@ -5,9 +5,11 @@ public class Sensitivity {
         float f1 = (float) (0.5F * 0.6 + 0.2);
         return f1 * f1 * f1 * 8.0F;
     }
+
     public static float getGCDValue(int m) {
         return (getGCD() * 0.15F) * (float) m;
     }
+
     public static int calculateSensitivity(float deltaYaw) {
         for (int i = 1; i <= 200; i++) {
             float gcdValue = getGCDValue(i);

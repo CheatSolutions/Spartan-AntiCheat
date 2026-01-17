@@ -19,8 +19,9 @@ import java.util.List;
 public class MultiBlockLegacyListener extends PacketAdapter {
     public MultiBlockLegacyListener() {
         super(Register.plugin, ListenerPriority.HIGHEST,
-                        PacketType.Play.Server.MULTI_BLOCK_CHANGE);
+                PacketType.Play.Server.MULTI_BLOCK_CHANGE);
     }
+
     @Override
     public void onPacketSending(PacketEvent event) {
         Player player = event.getPlayer();

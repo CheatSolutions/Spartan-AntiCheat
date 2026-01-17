@@ -23,7 +23,8 @@ public class PacketDebug extends PacketAdapter {
     public void onPacketReceiving(PacketEvent event) {
         Player player = event.getPlayer();
         PacketContainer packet = event.getPacket();
-        if (event.getPlayer().getName().equals("pawsashatoy")) display(player, "i: " + packet.getType().name() + " " + packet.getStructures().getValues());
+        if (event.getPlayer().getName().equals("pawsashatoy"))
+            display(player, "i: " + packet.getType().name() + " " + packet.getStructures().getValues());
     }
 
     private void display(Player player, String display) {

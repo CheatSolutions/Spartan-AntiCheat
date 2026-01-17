@@ -1,5 +1,7 @@
 package ai.idealistic.spartan.utils.minecraft.world;
 
+import ai.idealistic.spartan.abstraction.world.ServerBlock;
+import ai.idealistic.spartan.listeners.bukkit.standalone.ChunksEvent;
 import ai.idealistic.spartan.utils.minecraft.entity.AxisAlignedBB;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -21,7 +23,9 @@ public class BoundingBoxUtil {
         final double x = block.getX();
         final double y = block.getY();
         final double z = block.getZ();
-        final BlockData data = block.getBlockData();
+        final BlockData data = ChunksEvent.isLoaded(block)
+                ? block.getBlockData()
+                : null;
 
         if (data instanceof Slab) {
             final Slab slab = (Slab) data;
@@ -80,12 +84,13 @@ public class BoundingBoxUtil {
             boxes.add(wrap(base));
             boxes.add(wrap(step));
         } else {
-            if (ignore(block.getType().toString().toLowerCase())) {
+            if (ignore(new ServerBlock(block).getType().toString().toLowerCase())) {
                 return null;
             } else boxes.add(wrap(new AxisAlignedBB(x, y, z, x + 1, y + 1, z + 1)));
         }
         return boxes;
     }
+
     public static List<AxisAlignedBB> getBoundingBoxesLegacy(final Block block) {
         final List<AxisAlignedBB> boxes = new ArrayList<>();
         double x = block.getX();
@@ -148,7 +153,7 @@ public class BoundingBoxUtil {
             boxes.add(wrap(base));
             boxes.add(wrap(step));
         } else {
-            if (ignore(block.getType().toString().toLowerCase())) {
+            if (ignore(new ServerBlock(block).getType().toString().toLowerCase())) {
                 return null;
             } else boxes.add(wrap(new AxisAlignedBB(x, y, z, x + 1, y + 1, z + 1)));
         }
@@ -158,6 +163,7 @@ public class BoundingBoxUtil {
     public static boolean ignore(final String block) {
         return block.matches(".*(snow|step|frame|table|slab|stair|ladder|vine|waterlily|wall|carpet|fence|rod|bed|skull|pot|hopper|door|bars|piston|lily).*");
     }
+
     public static AxisAlignedBB wrap(final AxisAlignedBB bb) {
         return bb.expand(-1e-4, -1e-4, -1e-4);
     }

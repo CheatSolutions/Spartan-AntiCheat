@@ -4,13 +4,11 @@ import ai.idealistic.spartan.abstraction.profiling.MiningHistory;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.PluginBase;
-import ai.idealistic.spartan.functionality.tracking.Piston;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -43,13 +41,6 @@ public class WorldEvent implements Listener {
     private void Interact(PlayerInteractEvent e) {
         PlayerProtocol protocol = PluginBase.getProtocol(e.getPlayer(), true);
         CheckThread.run(() -> protocol.executeRunners(false, e)); // False because is cancelled is deprecated
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    private void Piston(BlockPistonExtendEvent e) {
-        if (!e.isCancelled()) {
-            CheckThread.run(() -> Piston.run(e.getBlock(), e.getBlocks()));
-        }
     }
 
 }

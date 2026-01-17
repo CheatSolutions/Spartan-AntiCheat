@@ -5,4 +5,6 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class RayLine { public final double x, z;}
+public class RayLine {
+    public final double x, z;
+}

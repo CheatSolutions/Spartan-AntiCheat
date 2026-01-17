@@ -454,11 +454,16 @@ public abstract class CheckDetection extends CheckProcess {
             boolean groundTeleport,
             double damage
     ) {
-        if (!this.executor.canCancel()
-                || !this.executor.canRun()) {
+        if (!this.executor.canCancel()) {
             return;
         }
-        CheckCancellation disableCause = this.executor.getDisableCause();
+        if (!this.executor.canRun()) {
+            this.executor.addInformationalDisableCause(
+                    "Check executor will not let the detection/s run."
+            );
+            return;
+        }
+        CheckCancellation disableCause = this.executor.getDisableCause(false);
 
         if (disableCause != null
                 && !disableCause.hasExpired()

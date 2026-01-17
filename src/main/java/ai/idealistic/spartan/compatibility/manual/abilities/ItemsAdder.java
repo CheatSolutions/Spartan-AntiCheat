@@ -6,6 +6,7 @@ import ai.idealistic.spartan.compatibility.Compatibility;
 import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
 import ai.idealistic.spartan.functionality.server.PluginBase;
+import ai.idealistic.spartan.listeners.bukkit.standalone.ChunksEvent;
 import dev.lone.itemsadder.api.CustomBlock;
 import dev.lone.itemsadder.api.CustomEntity;
 import dev.lone.itemsadder.api.CustomStack;
@@ -60,6 +61,7 @@ public class ItemsAdder implements Listener {
 
     public static boolean is(Block block) {
         return Compatibility.CompatibilityType.ITEMS_ADDER.isFunctional()
+                && ChunksEvent.isLoaded(block)
                 && CustomBlock.byAlreadyPlaced(block) != null;
     }
 

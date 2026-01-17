@@ -129,6 +129,20 @@ public class MaterialUtils {
             alternative.put("lead", Material.getMaterial("LEASH"));
             alternative.put("carrot_on_a_stick", Material.getMaterial("CARROT_STICK"));
         }
+        for (String s : new String[]{
+                "WOODEN_SPEAR",
+                "STONE_SPEAR",
+                "IRON_SPEAR",
+                "DIAMOND_SPEAR",
+                "GOLDEN_SPEAR",
+                "NETHERITE_SPEAR"
+        }) {
+            Material m = MaterialUtils.findMaterial(s);
+
+            if (m != null) {
+                alternative.put(s.toLowerCase(), m);
+            }
+        }
 
         for (Material m : Material.values()) {
             String s = m.toString();
@@ -256,7 +270,7 @@ public class MaterialUtils {
             if (protocol.isSwimming()) {
                 water = true;
             } else {
-                ServerBlock block = new ServerLocation(protocol.getLocation()).add(0, protocol.getEyeHeight(), 0).getBlock();
+                ServerBlock block = new ServerLocation(protocol.getLocation()).add(0, protocol.getEyeHeight(), 0).getBlock(protocol);
                 water = block.isWaterLogged() || block.getType() == MaterialUtils.get("water");
             }
             if (water) {

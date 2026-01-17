@@ -40,14 +40,14 @@ public class VelocityListener extends PacketAdapter {
         if (!packet.getType().equals(PacketType.Play.Server.ENTITY_VELOCITY)) {
             return;
         }
-        if (!packet.getIntegers().getValues().isEmpty()) {
+        if (packet.getIntegers().getValues().size() >= 4) {
             int id = packet.getIntegers().getValues().get(0);
 
             if (protocol.getEntityId() == id) {
                 CheckThread.run(() -> {
                     double x = packet.getIntegers().read(1).doubleValue() / 8000.0D,
-                                    y = packet.getIntegers().read(2).doubleValue() / 8000.0D,
-                                    z = packet.getIntegers().read(3).doubleValue() / 8000.0D;
+                            y = packet.getIntegers().read(2).doubleValue() / 8000.0D,
+                            z = packet.getIntegers().read(3).doubleValue() / 8000.0D;
                     CPlayerVelocityEvent velocityEvent = new CPlayerVelocityEvent(player, new Vector(x, y, z));
                     velocityEvent.setCancelled(event.isCancelled());
                     VelocityEvent.event(velocityEvent, true);

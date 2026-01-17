@@ -95,5 +95,5 @@ public class AwarenessNotifications {
             Bukkit.getConsoleSender().sendMessage(message);
         }
     }
-    
+
 }

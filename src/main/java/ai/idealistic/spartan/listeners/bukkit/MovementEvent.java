@@ -35,10 +35,10 @@ public class MovementEvent implements Listener {
                     ? new ServerLocation(vehicle)
                     : new ServerLocation(nto);
             RotationEvent rotationEvent = new RotationEvent(
-                            protocol,
-                            new Vec2f(e.getFrom().getYaw(), e.getFrom().getPitch()),
-                            new Vec2f(e.getTo().getYaw(), e.getTo().getPitch())
-                            );
+                    protocol,
+                    new Vec2f(e.getFrom().getYaw(), e.getFrom().getPitch()),
+                    new Vec2f(e.getTo().getYaw(), e.getTo().getPitch())
+            );
             protocol.getSensitivityProcessor().setLastDeltaPitch(rotationEvent.getDelta().getY());
             protocol.getSensitivityProcessor().processSensitivity();
             protocol.getCinematicComponent().process(rotationEvent);

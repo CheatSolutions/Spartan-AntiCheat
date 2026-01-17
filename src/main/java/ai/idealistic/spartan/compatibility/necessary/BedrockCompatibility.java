@@ -10,9 +10,11 @@ public class BedrockCompatibility {
 
     public static boolean isPlayer(Player p) {
         return ProtocolSupport.isBedrockPlayer(p)
-                
-                || !ProtocolLib.isTemporary(p)
-                && Floodgate.isBedrockPlayer(p.getUniqueId(), p.getName())
+
+                || Floodgate.isBedrockPlayer(
+                ProtocolLib.isTemporary(p) ? null : p.getUniqueId(),
+                p.getName()
+        )
 
                 || Config.settings.getBoolean("Important.bedrock_client_permission")
                 && Permissions.onlyHas(p, Permission.BEDROCK);

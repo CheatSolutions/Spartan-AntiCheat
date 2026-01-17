@@ -1,5 +1,6 @@
 package ai.idealistic.spartan.abstraction.world;
 
+import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import ai.idealistic.spartan.listeners.bukkit.standalone.ChunksEvent;
@@ -19,6 +20,7 @@ import java.util.*;
 @Data
 public class ServerLocation implements Cloneable {
 
+    public static Material emptyMaterial = Material.STONE;
     public static final Location bukkitDefault = new Location(
             Bukkit.getWorlds().get(0),
             AlgebraUtils.randomInteger(Integer.MIN_VALUE, Integer.MAX_VALUE),
@@ -179,13 +181,20 @@ public class ServerLocation implements Cloneable {
         return new ServerBlock(this.world.getBlockAt(getBlockX(), getBlockY(), getBlockZ()));
     }
 
-    private ServerBlock setAsyncBlock() {
+    private ServerBlock setAsyncBlock(PlayerProtocol protocol) {
+        Block block = ChunksEvent.getBlockAsync(this.bukkit());
         return new ServerBlock(
-                ChunksEvent.getBlockAsync(this.bukkit())
+                block == null
+                        ? (protocol == null ? null : protocol.packetWorld.getBlockRaw(this.bukkit()))
+                        : block
         );
     }
 
     public ServerBlock getBlock() {
+        return getBlock(null);
+    }
+
+    public ServerBlock getBlock(PlayerProtocol protocol) {
         int blockY = getBlockY();
 
         if (ChunksEvent.heightSupport ?
@@ -195,7 +204,7 @@ public class ServerLocation implements Cloneable {
                 if (PluginBase.isSynchronised()) {
                     return setBlock();
                 } else {
-                    return setAsyncBlock();
+                    return setAsyncBlock(protocol);
                 }
             } else if (MultiVersion.folia
                     || PluginBase.isSynchronised()) {
@@ -210,7 +219,7 @@ public class ServerLocation implements Cloneable {
                 }
             }
         } else {
-            return new ServerBlock(Material.AIR);
+            return new ServerBlock(emptyMaterial);
         }
     }
 

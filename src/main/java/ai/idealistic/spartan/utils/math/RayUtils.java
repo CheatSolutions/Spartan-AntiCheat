@@ -95,7 +95,7 @@ public class RayUtils {
         for (int x = min.getBlockX(); x <= max.getBlockX(); x++) {
             for (int y = min.getBlockY(); y <= max.getBlockY(); y++) {
                 for (int z = min.getBlockZ(); z <= max.getBlockZ(); z++) {
-                    ServerBlock block = new ServerLocation(world, x, y, z).getBlock();
+                    ServerBlock block = new ServerLocation(world, x, y, z).getBlock(protocol);
 
                     for (Set<Material> set : sets) {
                         if (set.contains(block.getType())) {
@@ -117,7 +117,7 @@ public class RayUtils {
         for (int x = min.getBlockX(); x <= max.getBlockX(); x++) {
             for (int y = min.getBlockY(); y <= max.getBlockY(); y++) {
                 for (int z = min.getBlockZ(); z <= max.getBlockZ(); z++) {
-                    ServerBlock block = new ServerLocation(world, x, y, z).getBlock();
+                    ServerBlock block = new ServerLocation(world, x, y, z).getBlock(protocol);
 
                     if (set.contains(block.getType())) {
                         return true;
@@ -137,7 +137,7 @@ public class RayUtils {
         for (int x = min.getBlockX(); x <= max.getBlockX(); x++) {
             for (int y = min.getBlockY(); y <= max.getBlockY(); y++) {
                 for (int z = min.getBlockZ(); z <= max.getBlockZ(); z++) {
-                    ServerBlock block = new ServerLocation(world, x, y, z).getBlock();
+                    ServerBlock block = new ServerLocation(world, x, y, z).getBlock(protocol);
 
                     if (block.getType() == material) {
                         return true;
@@ -157,7 +157,7 @@ public class RayUtils {
         for (int x = min.getBlockX(); x <= max.getBlockX(); x++) {
             for (int y = min.getBlockY(); y <= max.getBlockY(); y++) {
                 for (int z = min.getBlockZ(); z <= max.getBlockZ(); z++) {
-                    ServerBlock block = new ServerLocation(world, x, y, z).getBlock();
+                    ServerBlock block = new ServerLocation(world, x, y, z).getBlock(protocol);
 
                     if (BlockUtils.isSolid(block.getType())) {
                         return true;
@@ -177,7 +177,7 @@ public class RayUtils {
         for (int x = min.getBlockX(); x <= max.getBlockX(); x++) {
             for (int y = min.getBlockY(); y <= max.getBlockY(); y++) {
                 for (int z = min.getBlockZ(); z <= max.getBlockZ(); z++) {
-                    ServerBlock block = new ServerLocation(world, x, y, z).getBlock();
+                    ServerBlock block = new ServerLocation(world, x, y, z).getBlock(protocol);
 
                     if (BlockUtils.isSolid(block.getType())) {
                         return true;
@@ -197,7 +197,7 @@ public class RayUtils {
         for (int x = min.getBlockX(); x <= max.getBlockX(); x++) {
             for (int y = min.getBlockY(); y <= max.getBlockY(); y++) {
                 for (int z = min.getBlockZ(); z <= max.getBlockZ(); z++) {
-                    ServerBlock block = new ServerLocation(world, x, y, z).getBlock();
+                    ServerBlock block = new ServerLocation(world, x, y, z).getBlock(protocol);
 
                     if (BlockUtils.isSolid(block.getType())) {
                         return true;
@@ -220,7 +220,7 @@ public class RayUtils {
         return new float[]{castTo360(yaw), pitch};
     }
 
-    public static boolean inHitbox(PlayerProtocol protocol, Entity target, float size) {
+    public static boolean inHitbox(PlayerProtocol protocol, Entity target, float size, boolean sleeping) {
         Location location = protocol.getLocation();
         boolean intersection = false;
         boolean intersection2 = false;
@@ -241,7 +241,7 @@ public class RayUtils {
                     targetX + size, targetY + 1.9F, targetZ + size
             );
             // boundingBox = boundingBox.expand(0.04, 0.03, 0.04);
-            intersection = isIntersection(protocol, location, intersection, boundingBox);
+            intersection = isIntersection(protocol, location, intersection, sleeping, boundingBox);
             exempt = target.isInsideVehicle();
         } else {
             double targetX = target.getLocation().getX();
@@ -253,14 +253,14 @@ public class RayUtils {
                     targetX + size, targetY + 1.9F, targetZ + size
             );
             // boundingBox = boundingBox.expand(0.04, 0.03, 0.04);
-            intersection = isIntersection(protocol, location, intersection, boundingBox);
-            intersection2 = isIntersection(protocol, protocol.getFromLocation(), intersection2, boundingBox);
+            intersection = isIntersection(protocol, location, intersection, sleeping, boundingBox);
+            intersection2 = isIntersection(protocol, protocol.getFromLocation(), intersection2, sleeping, boundingBox);
             exempt = target.isInsideVehicle() || !(target instanceof Villager || target instanceof Zombie || target instanceof Skeleton || target instanceof Creeper);
         }
         return intersection || intersection2 || exempt;
     }
 
-    public static boolean inHitbox(PlayerProtocol protocol, Location locationIn, Entity target, float size, float dist) {
+    public static boolean inHitbox(PlayerProtocol protocol, Location locationIn, Entity target, float size, float dist, boolean sleeping) {
         Location location = protocol.getLocation();
         boolean intersection = false;
         boolean exempt;
@@ -273,12 +273,12 @@ public class RayUtils {
                 targetX + size, targetY + 1.9F, targetZ + size
         );
         // boundingBox = boundingBox.expand(0.04, 0.03, 0.04);
-        intersection = isIntersection(protocol, location, intersection, boundingBox, dist);
+        intersection = isIntersection(protocol, location, intersection, sleeping, boundingBox, dist);
         exempt = target.isInsideVehicle();
         return intersection || exempt;
     }
 
-    public static boolean inHitboxFrom(PlayerProtocol protocol, Location locationIn, Entity target, float size) {
+    public static boolean inHitboxFrom(PlayerProtocol protocol, Location locationIn, Entity target, float size, boolean sleeping) {
         boolean intersection = false;
         boolean exempt;
         double targetX = locationIn.getX();
@@ -290,12 +290,12 @@ public class RayUtils {
                 targetX + size, targetY + 1.9F, targetZ + size
         );
         // boundingBox = boundingBox.expand(0.04, 0.03, 0.04);
-        intersection = isIntersection(protocol, protocol.getPastTickRotation().bukkit(), intersection, boundingBox);
+        intersection = isIntersection(protocol, protocol.getPastTickRotation().bukkit(), intersection, sleeping, boundingBox);
         exempt = target.isInsideVehicle();
         return intersection || exempt;
     }
 
-    public static boolean inHitbox(PlayerProtocol protocol, Location locationIn, float size) {
+    public static boolean inHitbox(PlayerProtocol protocol, Location locationIn, float size, boolean sleeping) {
         Location location = protocol.getLocation();
         boolean intersection = false;
         double targetX = locationIn.getX();
@@ -307,12 +307,12 @@ public class RayUtils {
                 targetX + size, targetY + size, targetZ + size
         );
         // boundingBox = boundingBox.expand(0.04, 0.03, 0.04);
-        intersection = isIntersection(protocol, location, intersection, boundingBox);
+        intersection = isIntersection(protocol, location, intersection, sleeping, boundingBox);
         ;
         return intersection;
     }
 
-    public static boolean inHitbox(PlayerProtocol protocol, Location locationIn, float size, double dist) {
+    public static boolean inHitbox(PlayerProtocol protocol, Location locationIn, float size, double dist, boolean sleeping) {
         Location location = protocol.getLocation();
         boolean intersection = false;
         double targetX = locationIn.getX();
@@ -324,51 +324,51 @@ public class RayUtils {
                 targetX + size, targetY + size, targetZ + size
         );
         // boundingBox = boundingBox.expand(0.04, 0.03, 0.04);
-        intersection = isIntersection(protocol, location, intersection, boundingBox, dist);
+        intersection = isIntersection(protocol, location, intersection, sleeping, boundingBox, dist);
         return intersection;
     }
 
-    private static boolean isIntersection(PlayerProtocol protocol, Location location, boolean intersection, AxisAlignedBB boundingBox) {
+    private static boolean isIntersection(PlayerProtocol protocol, Location location, boolean intersection, boolean sleeping, AxisAlignedBB boundingBox) {
         for (final boolean rotation : BOOLEANS) {
             for (final boolean sneak : BOOLEANS) {
                 final float yaw = location.getYaw();
                 final float pitch = location.getPitch();
-                final MovingObjectPosition result = rayCast(yaw, pitch, sneak, boundingBox, protocol);
+                final MovingObjectPosition result = rayCast(yaw, pitch, sneak, sleeping, boundingBox, protocol);
                 intersection |= result != null && result.hitVec != null;
             }
         }
         return intersection;
     }
 
-    private static boolean isIntersection(PlayerProtocol protocol, Location location, boolean intersection, AxisAlignedBB boundingBox, double dist) {
+    private static boolean isIntersection(PlayerProtocol protocol, Location location, boolean intersection, boolean sleeping, AxisAlignedBB boundingBox, double dist) {
         for (final boolean rotation : BOOLEANS) {
             for (final boolean sneak : BOOLEANS) {
                 final float yaw = location.getYaw();
                 final float pitch = location.getPitch();
-                final MovingObjectPosition result = rayCast(yaw, pitch, sneak, boundingBox, protocol, dist);
+                final MovingObjectPosition result = rayCast(yaw, pitch, sneak, sleeping, boundingBox, protocol, dist);
                 intersection |= result != null && result.hitVec != null;
             }
         }
         return intersection;
     }
 
-    private static MovingObjectPosition rayCast(final float yaw, final float pitch, final boolean sneak, final AxisAlignedBB bb, PlayerProtocol protocol) {
+    private static MovingObjectPosition rayCast(final float yaw, final float pitch, final boolean sneak, final boolean sleeping, final AxisAlignedBB bb, PlayerProtocol protocol) {
         Location position = protocol.getLocation();
         double lastX = position.getX(),
                 lastY = position.getY(),
                 lastZ = position.getZ();
-        Vec3 vec3 = new Vec3(lastX, lastY + getEyeHeight(sneak, protocol), lastZ),
+        Vec3 vec3 = new Vec3(lastX, lastY + getEyeHeight(sneak, sleeping), lastZ),
                 vec31 = getVectorForRotation(pitch, yaw),
                 vec32 = vec3.add(new Vec3(vec31.xCoord * 3D, vec31.yCoord * 3D, vec31.zCoord * 3D));
         return bb.calculateIntercept(vec3, vec32);
     }
 
-    private static MovingObjectPosition rayCast(final float yaw, final float pitch, final boolean sneak, final AxisAlignedBB bb, PlayerProtocol protocol, double dist) {
+    private static MovingObjectPosition rayCast(final float yaw, final float pitch, final boolean sneak, final boolean sleeping, final AxisAlignedBB bb, PlayerProtocol protocol, double dist) {
         Location position = protocol.getLocation();
         double lastX = position.getX(),
                 lastY = position.getY(),
                 lastZ = position.getZ();
-        Vec3 vec3 = new Vec3(lastX, lastY + getEyeHeight(sneak, protocol), lastZ),
+        Vec3 vec3 = new Vec3(lastX, lastY + getEyeHeight(sneak, sleeping), lastZ),
                 vec31 = getVectorForRotation(pitch, yaw),
                 vec32 = vec3.add(new Vec3(vec31.xCoord * dist, vec31.yCoord * dist, vec31.zCoord * dist));
         return bb.calculateIntercept(vec3, vec32);
@@ -383,30 +383,18 @@ public class RayUtils {
         return new Vec3(f1 * f2, f3, f * f2);
     }
 
-    public static float getEyeHeight(final boolean sneak, PlayerProtocol protocol) {
-        float f2 = 1.62F;
-
-        if (protocol.bukkit().isSleeping()) {
-            f2 = 0.2F;
-        }
-        if (sneak) {
-            f2 -= 0.08F;
-        }
-        return f2;
-    }
-
     public static double getOnlyScale(double value) {
         return value - Math.floor(value);
     }
 
-    public static float bruteforceRayTrace(Player player, Entity target) {
+    public static float bruteforceRayTrace(Player player, Entity target, boolean sleeping) {
         PlayerProtocol protocol = PluginBase.getProtocol(player);
         float bruteForce = 0.01F,
                 bruteForceStart = 0.01F;
         boolean checked = false;
 
         for (int i = 0; i < 40; i++) {
-            if (inHitbox(protocol, target, bruteForceStart)) {
+            if (inHitbox(protocol, target, bruteForceStart, sleeping)) {
                 bruteForce = bruteForceStart;
                 checked = true;
             } else {
@@ -416,13 +404,13 @@ public class RayUtils {
         return (checked) ? bruteForce : 0.4F;
     }
 
-    public static float bruteforceRayTrace(PlayerProtocol protocol, Entity target) {
+    public static float bruteforceRayTrace(PlayerProtocol protocol, Entity target, boolean sleeping) {
         float bruteForce = 0.01F;
         float bruteForceStart = 0.01F;
         boolean checked = false;
 
         for (int i = 0; i < 60; i++) {
-            if (inHitbox(protocol, target, bruteForceStart)) {
+            if (inHitbox(protocol, target, bruteForceStart, sleeping)) {
                 bruteForce = bruteForceStart;
                 checked = true;
             } else {
@@ -432,13 +420,13 @@ public class RayUtils {
         return (checked) ? bruteForce : 0.6F;
     }
 
-    public static float bruteforceRayTraceWithCustomLocation(PlayerProtocol protocol, Location location, Entity target) {
+    public static float bruteforceRayTraceWithCustomLocation(PlayerProtocol protocol, Location location, Entity target, boolean sleeping) {
         float bruteForce = 0.01F;
         float bruteForceStart = 0.01F;
         boolean checked = false;
 
         for (int i = 0; i < 100; i++) {
-            if (inHitbox(protocol, location, target, bruteForceStart, 3.0F)) {
+            if (inHitbox(protocol, location, target, bruteForceStart, 3.0F, sleeping)) {
                 bruteForce = bruteForceStart;
                 checked = true;
             } else {
@@ -448,14 +436,14 @@ public class RayUtils {
         return (checked) ? bruteForce : 0.6F;
     }
 
-    public static double hitBoxRay(Player instance, Location player, Location target, double size, boolean sneak) {
+    public static double hitBoxRay(Player instance, Location player, Location target, double size, boolean sneak, boolean sleeping) {
         double d = 0.0;
         double increment = 0.1;
         int maxSteps = 60;
         float yaw = player.getYaw();
         double yR = Math.toRadians(yaw);
         RayLine ray = new RayLine(-Math.sin(yR), Math.cos(yR));
-        double eyeHeight = getEyeHeight(sneak, instance);
+        double eyeHeight = getEyeHeight(sneak, sleeping);
 
         for (int i = 0; i < maxSteps; i++) {
             double newX = player.getX() + ray.x * d;
@@ -477,10 +465,10 @@ public class RayUtils {
         return xB && yB && zB;
     }
 
-    public static float getEyeHeight(final boolean sneak, Player player) {
+    public static float getEyeHeight(boolean sneak, boolean sleeping) {
         float f2 = 1.62F;
 
-        if (player.isSleeping()) {
+        if (sleeping) {
             f2 = 0.2F;
         }
         if (sneak) {
@@ -489,7 +477,7 @@ public class RayUtils {
         return f2;
     }
 
-    public static boolean isSaveToTeleport(Player player, Location location) {
+    public static boolean isSaveToTeleport(PlayerProtocol protocol, Location location) {
         double x = location.getX();
         double y = location.getY();
         double z = location.getZ();
@@ -498,8 +486,8 @@ public class RayUtils {
             for (int dy = -1; dy <= 1; dy++) {
                 for (int dz = -1; dz <= 1; dz++) {
                     Material material = new ServerLocation(
-                            new Location(ProtocolLib.getWorld(player), x + (dx * 0.3), y + (dy * 0.3), z + (dz * 0.3))
-                    ).getBlock().getTypeOrNull();
+                            new Location(protocol.getWorld(), x + (dx * 0.3), y + (dy * 0.3), z + (dz * 0.3))
+                    ).getBlock(protocol).getTypeOrNull();
                     if (material == null) continue;
                     if (!BlockUtils.areAir(material)) {
                         return false;
@@ -510,21 +498,21 @@ public class RayUtils {
         return true;
     }
 
-    public static boolean ifRayBound(PlayerProtocol protocol, AxisAlignedBB boundingBox, double dist) {
+    public static boolean ifRayBound(PlayerProtocol protocol, AxisAlignedBB boundingBox, double dist, boolean sleeping) {
 
         boolean intersection = false;
         // boundingBox = boundingBox.expand(0.04, 0.03, 0.04);
-        intersection = isIntersection(protocol, protocol.getLocation(), intersection, boundingBox, dist);
+        intersection = isIntersection(protocol, protocol.getLocation(), intersection, sleeping, boundingBox, dist);
         return intersection;
     }
 
-    public static boolean ifRayBoundClient(PlayerProtocol protocol, AxisAlignedBB boundingBox, double dist) {
+    public static boolean ifRayBoundClient(PlayerProtocol protocol, AxisAlignedBB boundingBox, double dist, boolean sleeping) {
 
         boolean intersection = false;
         boolean intersection2 = false;
         // boundingBox = boundingBox.expand(0.04, 0.03, 0.04);
-        intersection = isIntersection(protocol, protocol.getLocation(), intersection, boundingBox, dist);
-        intersection2 = isIntersection(protocol, protocol.getFromLocation(), intersection, boundingBox, dist);
+        intersection = isIntersection(protocol, protocol.getLocation(), intersection, sleeping, boundingBox, dist);
+        intersection2 = isIntersection(protocol, protocol.getFromLocation(), intersection, sleeping, boundingBox, dist);
         return intersection || intersection2;
     }
 }

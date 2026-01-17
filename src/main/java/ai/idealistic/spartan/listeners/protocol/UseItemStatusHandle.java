@@ -64,7 +64,7 @@ public class UseItemStatusHandle extends PacketAdapter {
                                 && !protocol.getGameMode().equals(GameMode.CREATIVE))) {
                     protocol.useItemPacket = true;
                     protocol.useItemPacketReset =
-                                    !(itemStack.getType().toString().contains("SHIELD") ||
+                            !(itemStack.getType().toString().contains("SHIELD") ||
                                     itemStack.getType().toString().contains("GOLDEN_APPLE"));
                 }
             }

@@ -2,6 +2,7 @@ package ai.idealistic.spartan.abstraction.profiling;
 
 import ai.idealistic.spartan.abstraction.check.CheckEnums;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.abstraction.world.ServerBlock;
 import ai.idealistic.spartan.api.PlayerFoundOreEvent;
 import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
@@ -24,7 +25,8 @@ public class MiningHistory {
     public static void log(PlayerProtocol protocol, Block block, boolean cancelled) {
         if (protocol.getGameMode() == GameMode.SURVIVAL
                 && PlayerUtils.isPickaxeItem(protocol.getItemInHand().getType())) {
-            MiningHistory.MiningOre ore = MiningHistory.getMiningOre(block.getType());
+            ServerBlock local = new ServerBlock(block);
+            MiningHistory.MiningOre ore = MiningHistory.getMiningOre(local.getType());
 
             if (ore != null) {
                 World.Environment environment = block.getWorld().getEnvironment();
@@ -40,7 +42,7 @@ public class MiningHistory {
                 PlayerFoundOreEvent event;
 
                 if (Config.settings.getBoolean("Important.enable_developer_api")) {
-                    event = new PlayerFoundOreEvent(protocol.bukkit(), log, block.getLocation(), block.getType());
+                    event = new PlayerFoundOreEvent(protocol.bukkit(), log, block.getLocation(), local.getType());
                     Bukkit.getPluginManager().callEvent(event);
                 } else {
                     event = null;
@@ -52,7 +54,7 @@ public class MiningHistory {
                             null,
                             log,
                             false,
-                            block.getType(),
+                            local.getType(),
                             null,
                             System.currentTimeMillis()
                     );

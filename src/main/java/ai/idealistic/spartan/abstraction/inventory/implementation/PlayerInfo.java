@@ -1,7 +1,6 @@
 package ai.idealistic.spartan.abstraction.inventory.implementation;
 
 import ai.idealistic.spartan.Register;
-import ai.idealistic.spartan.abstraction.check.Check;
 import ai.idealistic.spartan.abstraction.check.CheckCancellation;
 import ai.idealistic.spartan.abstraction.check.CheckEnums;
 import ai.idealistic.spartan.abstraction.check.CheckEnums.HackType;
@@ -18,10 +17,12 @@ import ai.idealistic.spartan.functionality.moderation.clickable.ClickableMessage
 import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.Permissions;
 import ai.idealistic.spartan.functionality.server.PluginBase;
+import ai.idealistic.spartan.functionality.server.TPS;
 import ai.idealistic.spartan.functionality.tracking.DetectionCharge;
 import ai.idealistic.spartan.functionality.tracking.ResearchEngine;
 import ai.idealistic.spartan.utils.java.OverflowMap;
 import ai.idealistic.spartan.utils.java.TimeUtils;
+import ai.idealistic.spartan.utils.math.AlgebraUtils;
 import ai.idealistic.spartan.utils.minecraft.inventory.MaterialUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -147,7 +148,6 @@ public class PlayerInfo extends InventoryMenu {
                 String state = getDetectionNotification(
                         protocol,
                         hackType,
-                        profile.getLastDataType(),
                         isOnline
                 );
 
@@ -189,27 +189,11 @@ public class PlayerInfo extends InventoryMenu {
 
     private String getDetectionNotification(PlayerProtocol protocol,
                                             HackType hackType,
-                                            Check.DataType dataType,
                                             boolean hasPlayer) {
         if (!hasPlayer) {
             return "Player is offline";
         }
-        if (!PluginAddons.ownsCheck(hackType)) {
-            return "Check is not purchased";
-        }
-        if (!PluginAddons.ownsEdition(dataType)) {
-            return dataType + " edition is not purchased";
-        }
-        if (!DetectionCharge.has()) {
-            return "Detections need to be charged, run /" + Register.pluginName.toLowerCase() + " charge";
-        }
-        String worldName = protocol.getWorld().getName();
-        Check check = hackType.getCheck();
-
-        if (!check.isEnabled(dataType, worldName)) { // Do not put player because we calculate it below
-            return "Check is disabled";
-        }
-        CheckCancellation disabledCause = protocol.getRunner(hackType).getDisableCause();
+        CheckCancellation disabledCause = protocol.getRunner(hackType).getDisableCause(true);
         return Permissions.isBypassing(protocol.bukkit(), hackType)
                 ? "Player has permission bypass"
                 : disabledCause != null
@@ -224,12 +208,16 @@ public class PlayerInfo extends InventoryMenu {
 
         if (!protocols.isEmpty()) {
             for (PlayerProtocol protocol : protocols) {
-                InventoryView inventoryView = protocol.bukkit().getOpenInventory();
+                if (cooldowns.canDo("player-info=" + protocol.getUUID())) {
+                    InventoryView inventoryView = protocol.bukkit().getOpenInventory();
 
-                if (inventoryView.getTitle().equals(PlayerInfo.menu + targetName)
-                        && cooldowns.canDo("player-info=" + protocol.getUUID())) {
-                    cooldowns.add("player-info=" + protocol.getUUID(), 1);
-                    PluginBase.playerInfo.open(protocol, targetName);
+                    if (inventoryView.getTitle().equals(PlayerInfo.menu + targetName)) {
+                        cooldowns.add(
+                                "player-info=" + protocol.getUUID(),
+                                AlgebraUtils.integerRound(TPS.maximum)
+                        );
+                        PluginBase.playerInfo.open(protocol, targetName);
+                    }
                 }
             }
         }
