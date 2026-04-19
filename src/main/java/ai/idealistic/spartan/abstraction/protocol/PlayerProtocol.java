@@ -47,18 +47,25 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PlayerProtocol {
+
+    private static final Method
+            GET_CURSOR_METHOD,
+            COUNT_SLOTS_METHOD,
+            GET_TITLE_METHOD;
 
     public long activeCreationTime;
     private Player bukkit;
@@ -212,6 +219,35 @@ public class PlayerProtocol {
     }
 
     static {
+        Method m;
+
+        try {
+            m = InventoryView.class.getMethod("getCursor");
+        } catch (Exception ignored) {
+            m = null;
+        }
+        GET_CURSOR_METHOD = m;
+
+        // Separator
+
+        Method m1;
+
+        try {
+            m1 = InventoryView.class.getMethod("countSlots");
+        } catch (Exception ignored) {
+            m1 = null;
+        }
+        COUNT_SLOTS_METHOD = m1;
+
+        Method m2;
+
+        try {
+            m2 = InventoryView.class.getMethod("getTitle");
+        } catch (Exception ignored) {
+            m2 = null;
+        }
+        GET_TITLE_METHOD = m2;
+
         PluginBase.runRepeatingTask(() -> {
             Collection<PlayerProtocol> protocols = PluginBase.getProtocols();
 
@@ -240,7 +276,7 @@ public class PlayerProtocol {
                                 ).toArray(new Entity[0])
                         );
                     }
-                    CheckThread.run(() -> {
+                    CheckThread.run(protocol, () -> {
                         protocol.isFlying();
                         protocol.isGliding();
                         protocol.checkForAFK();
@@ -345,7 +381,14 @@ public class PlayerProtocol {
                 : ProtocolLib.getLocationOrNull(this.bukkit());
         return loc != null
                 ? loc
-                : ServerLocation.bukkitDefault.clone();
+                : new Location(
+                Bukkit.getWorlds().get(0),
+                ServerLocation.bukkitDefault.getX(),
+                ServerLocation.bukkitDefault.getY(),
+                ServerLocation.bukkitDefault.getZ(),
+                ServerLocation.bukkitDefault.getYaw(),
+                ServerLocation.bukkitDefault.getPitch()
+        );
     }
 
     public Location getFromLocation() {
@@ -612,7 +655,7 @@ public class PlayerProtocol {
                         || this.isUsingVersionOrGreater(MultiVersion.MCVersion.V1_11)
                         || PluginUtils.exists("viaversion")
                         || Compatibility.CompatibilityType.PROTOCOL_SUPPORT.isFunctional() ? 256 :
-                        100;
+                100;
     }
 
     public void sendImportantMessage(String message) {
@@ -936,6 +979,53 @@ public class PlayerProtocol {
             }
         }
         return -1;
+    }
+
+    // Separator
+
+    public ItemStack getOpenInventoryCursor() {
+        if (GET_CURSOR_METHOD == null) {
+            return null;
+        }
+        InventoryView inventoryView = this.bukkit.getOpenInventory();
+        ItemStack cursor;
+
+        try {
+            cursor = (ItemStack) GET_CURSOR_METHOD.invoke(inventoryView);
+        } catch (Exception ignored) {
+            cursor = null;
+        }
+        return cursor;
+    }
+
+    public int getOpenInventoryCountSlots(int defaultValue) {
+        if (COUNT_SLOTS_METHOD == null) {
+            return defaultValue;
+        }
+        InventoryView inventoryView = this.bukkit.getOpenInventory();
+        Integer slots;
+
+        try {
+            slots = (Integer) COUNT_SLOTS_METHOD.invoke(inventoryView);
+        } catch (Exception ignored) {
+            slots = null;
+        }
+        return slots != null ? slots : defaultValue;
+    }
+
+    public String getOpenInventoryTitle(String defaultValue) {
+        if (GET_TITLE_METHOD == null) {
+            return defaultValue;
+        }
+        InventoryView inventoryView = this.bukkit.getOpenInventory();
+        String title;
+
+        try {
+            title = (String) GET_TITLE_METHOD.invoke(inventoryView);
+        } catch (Exception ignored) {
+            title = null;
+        }
+        return title != null ? title : defaultValue;
     }
 
 }

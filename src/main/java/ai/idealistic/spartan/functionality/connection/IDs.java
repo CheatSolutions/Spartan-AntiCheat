@@ -15,22 +15,14 @@ public class IDs {
             builtByBit = "%%__BUILTBYBIT__%%".length() != 18,
             polymart = "%%__POLYMART__%%".length() == 1,
             spigot = !builtByBit && !polymart && enabled;
-    private static String
-            userModified = null,
-            fileModified = null;
-
-    static void set(int user, int nonce) {
-        IDs.userModified = Integer.toString(user);
-        IDs.fileModified = Integer.toString(nonce);
-    }
 
     public static String user() {
-        return userModified != null ? userModified : user;
+        return user;
     }
 
     public static String file() {
         if (IDs.enabled) {
-            String f = fileModified != null ? fileModified : file;
+            String f = file;
 
             if (!f.startsWith("%%__")
                     && !AlgebraUtils.validInteger(f)) {
@@ -44,10 +36,6 @@ public class IDs {
 
     static String platform() {
         return IDs.builtByBit ? "BuiltByBit" : IDs.polymart ? "Polymart" : IDs.spigot ? "SpigotMC" : "Free";
-    }
-
-    public static boolean canAdvertise() {
-        return !IDs.enabled || IDs.builtByBit || IDs.polymart;
     }
 
 }

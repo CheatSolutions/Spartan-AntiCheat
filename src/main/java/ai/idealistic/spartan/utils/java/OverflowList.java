@@ -39,13 +39,13 @@ public class OverflowList<E> implements List<E> {
 
     @NotNull
     @Override
-    public Object @NotNull [] toArray() {
+    public Object[] toArray() {
         return this.list.toArray();
     }
 
     @NotNull
     @Override
-    public <T> T @NotNull [] toArray(@NotNull T @NotNull [] a) {
+    public <T> T[] toArray(@NotNull T[] a) {
         return this.list.toArray(a);
     }
 

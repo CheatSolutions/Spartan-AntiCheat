@@ -3,6 +3,7 @@ package ai.idealistic.spartan.listeners.protocol;
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.event.CPlayerVelocityEvent;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.compatibility.necessary.protocollib.BackPlib;
 import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.PluginBase;
@@ -40,16 +41,19 @@ public class VelocityListener extends PacketAdapter {
         if (!packet.getType().equals(PacketType.Play.Server.ENTITY_VELOCITY)) {
             return;
         }
-        if (packet.getIntegers().getValues().size() >= 4) {
-            int id = packet.getIntegers().getValues().get(0);
+        if (packet.getIntegers().size() >= 4) {
+            int id = BackPlib.getSafeInt(packet, 0);
 
             if (protocol.getEntityId() == id) {
-                CheckThread.run(() -> {
-                    double x = packet.getIntegers().read(1).doubleValue() / 8000.0D,
-                            y = packet.getIntegers().read(2).doubleValue() / 8000.0D,
-                            z = packet.getIntegers().read(3).doubleValue() / 8000.0D;
+                final double x = ((double) BackPlib.getSafeInt(packet, 1)) / 8000.0D;
+                final double y = ((double) BackPlib.getSafeInt(packet, 2)) / 8000.0D;
+                final double z = ((double) BackPlib.getSafeInt(packet, 3)) / 8000.0D;
+                final boolean isCancelled = event.isCancelled();
+
+                CheckThread.run(protocol, () -> {
+                    // Now it's safe to use these variables asynchronously
                     CPlayerVelocityEvent velocityEvent = new CPlayerVelocityEvent(player, new Vector(x, y, z));
-                    velocityEvent.setCancelled(event.isCancelled());
+                    velocityEvent.setCancelled(isCancelled);
                     VelocityEvent.event(velocityEvent, true);
                 });
             }

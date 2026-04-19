@@ -35,23 +35,21 @@ public class EntityActionListener extends PacketAdapter {
                 && protocol.isBedrockPlayer()) {
             return;
         }
-        CheckThread.run(() -> {
-            if (event.getPacket().getModifier().getValues().size() > 1) {
-                String typeString = event.getPacket().getModifier().getValues().get(1).toString();
+        CheckThread.run(protocol, () -> {
+            if (event.getPacket().getModifier().size() > 1) {
+                String typeString = event.getPacket().getModifier().read(1).toString();
                 AbilitiesEnum type = getEnum(typeString);
 
                 if (type != null) {
-                    CheckThread.run(() -> {
-                        if (type == AbilitiesEnum.PRESS_SHIFT_KEY) {
-                            protocol.sneaking = true;
-                        } else if (type == AbilitiesEnum.RELEASE_SHIFT_KEY) {
-                            protocol.sneaking = false;
-                        } else if (type == AbilitiesEnum.START_SPRINTING) {
-                            protocol.sprinting = true;
-                        } else if (type == AbilitiesEnum.STOP_SPRINTING) {
-                            protocol.sprinting = false;
-                        }
-                    });
+                    if (type == AbilitiesEnum.PRESS_SHIFT_KEY) {
+                        protocol.sneaking = true;
+                    } else if (type == AbilitiesEnum.RELEASE_SHIFT_KEY) {
+                        protocol.sneaking = false;
+                    } else if (type == AbilitiesEnum.START_SPRINTING) {
+                        protocol.sprinting = true;
+                    } else if (type == AbilitiesEnum.STOP_SPRINTING) {
+                        protocol.sprinting = false;
+                    }
                 }
             }
         });

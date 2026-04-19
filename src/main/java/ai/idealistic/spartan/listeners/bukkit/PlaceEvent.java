@@ -18,7 +18,7 @@ public class PlaceEvent implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public static void event(BlockPlaceEvent e) {
         PlayerProtocol protocol = PluginBase.getProtocol(e.getPlayer(), true);
-        CheckThread.run(() -> event(protocol, e.getBlock(), e.getBlockAgainst(), e, false));
+        CheckThread.run(null, () -> event(protocol, e.getBlock(), e.getBlockAgainst(), e, false));
 
         if (protocol.getRunner(CheckEnums.HackType.FAST_PLACE).prevent()
                 || protocol.getRunner(CheckEnums.HackType.BLOCK_REACH).prevent()

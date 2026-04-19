@@ -1,5 +1,6 @@
 package ai.idealistic.spartan.utils.minecraft.protocol;
 
+import ai.idealistic.spartan.compatibility.necessary.protocollib.BackPlib;
 import ai.idealistic.spartan.compatibility.necessary.protocollib.ProtocolLib;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
 import ai.idealistic.spartan.listeners.protocol.MovementListener;
@@ -20,9 +21,9 @@ public class ProtocolTools {
         if (packet.getDoubles().size() >= 3) {
             return new Location(
                     ProtocolLib.getWorld(event.getPlayer()),
-                    packet.getDoubles().read(0),
-                    packet.getDoubles().read(1),
-                    packet.getDoubles().read(2)
+                    BackPlib.getSafeDouble(packet, 0),
+                    BackPlib.getSafeDouble(packet, 1),
+                    BackPlib.getSafeDouble(packet, 2)
             );
         } else {
             return null;
@@ -45,11 +46,11 @@ public class ProtocolTools {
     public static boolean onGroundPacketLevel(PacketEvent event) {
         PacketContainer packet = event.getPacket();
         return packet.getBooleans().size() > 0
-                && packet.getBooleans().read(0);
+                && BackPlib.getSafeBoolean(packet, 0);
     }
 
     public static Set<MovementListener.tpFlags> getTeleportFlags(PacketEvent event) {
-        String s = event.getPacket().getStructures().getValues().get(0).toString();
+        String s = event.getPacket().getStructures().read(0).toString();
         Set<MovementListener.tpFlags> flags = new HashSet<>(3);
         s = s.replace("X_ROT", "").replace("Y_ROT", "");
         if (s.contains("X")) flags.add(MovementListener.tpFlags.X);

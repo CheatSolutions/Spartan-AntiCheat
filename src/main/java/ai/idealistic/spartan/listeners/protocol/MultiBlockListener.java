@@ -2,6 +2,8 @@ package ai.idealistic.spartan.listeners.protocol;
 
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.compatibility.necessary.protocollib.BackPlib;
+import ai.idealistic.spartan.compatibility.necessary.protocollib.BlockPositionPlib;
 import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import com.comphenix.protocol.PacketType;
@@ -26,14 +28,14 @@ public class MultiBlockListener extends PacketAdapter {
         World world = player.getWorld();
         PacketContainer packet = event.getPacket();
 
-        BlockPosition b = packet.getSectionPositions().read(0);
+        BlockPosition b = BlockPositionPlib.getSafeSectionPositions(packet, 0);
         int chunkX = b.getX();
         int chunkZ = b.getZ();
         int chunkY = b.getY();
-        short[] records = packet.getShortArrays().read(0);
+        short[] records = BackPlib.getSafeShortArray(packet, 0);
         Object[] blockData = packet.getSpecificModifier(Object[].class).read(0);
 
-        CheckThread.run(() -> {
+        CheckThread.run(protocol, () -> {
             for (int i = 0; i < records.length; i++) {
                 short record = records[i];
                 int relX = (record >> 8) & 0xF;
@@ -55,7 +57,7 @@ public class MultiBlockListener extends PacketAdapter {
 
                 if (nmsData.toString().toLowerCase().contains("slime_block")
                         && loc.distance(protocol.getLocation()) < 14) {
-                    CheckThread.run(() -> protocol.predictedSlimeTicks = 6);
+                    protocol.predictedSlimeTicks = 6;
                 }
             }
         });

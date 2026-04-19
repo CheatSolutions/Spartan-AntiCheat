@@ -21,26 +21,26 @@ public class WorldEvent implements Listener {
         Block nb = e.getBlock();
         boolean cancelled = e.isCancelled();
 
-        CheckThread.run(() -> protocol.executeRunners(cancelled, e));
+        CheckThread.run(null, () -> protocol.executeRunners(cancelled, e));
         MiningHistory.log(protocol, nb, cancelled);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void Sign(SignChangeEvent e) {
         PlayerProtocol p = PluginBase.getProtocol(e.getPlayer(), true);
-        CheckThread.run(() -> p.executeRunners(e.isCancelled(), e));
+        CheckThread.run(null, () -> p.executeRunners(e.isCancelled(), e));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void Animation(PlayerAnimationEvent e) {
         PlayerProtocol protocol = PluginBase.getProtocol(e.getPlayer(), true);
-        CheckThread.run(() -> protocol.executeRunners(e.isCancelled(), e));
+        CheckThread.run(null, () -> protocol.executeRunners(e.isCancelled(), e));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void Interact(PlayerInteractEvent e) {
         PlayerProtocol protocol = PluginBase.getProtocol(e.getPlayer(), true);
-        CheckThread.run(() -> protocol.executeRunners(false, e)); // False because is cancelled is deprecated
+        CheckThread.run(null, () -> protocol.executeRunners(false, e)); // False because is cancelled is deprecated
     }
 
 }

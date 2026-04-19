@@ -40,13 +40,13 @@ public class ConcurrentList<E> implements List<E> {
 
     @NotNull
     @Override
-    public Object @NotNull [] toArray() {
+    public Object[] toArray() {
         return this.map.values().toArray();
     }
 
     @NotNull
     @Override
-    public <T> T @NotNull [] toArray(@NotNull T @NotNull [] a) {
+    public <T> T[] toArray(@NotNull T[] a) {
         return this.map.values().toArray(a);
     }
 

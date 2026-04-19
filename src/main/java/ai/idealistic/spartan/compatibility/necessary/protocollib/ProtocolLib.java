@@ -25,7 +25,7 @@ public class ProtocolLib {
             bukkit = false;
 
     public static boolean isPacketSupported(String packet) {
-        return BackgroundProtocolLib.isPacketSupported(packet);
+        return BackPlib.isPacketSupported(packet);
     }
 
     private static void checkClass() {
@@ -38,7 +38,7 @@ public class ProtocolLib {
         checkClass();
 
         if (!bukkit) {
-            BackgroundProtocolLib.run();
+            BackPlib.run();
         }
     }
 

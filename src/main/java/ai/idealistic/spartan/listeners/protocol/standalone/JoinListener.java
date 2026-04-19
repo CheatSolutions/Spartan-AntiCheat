@@ -33,7 +33,7 @@ public class JoinListener extends PacketAdapter {
         }
         LegacyLagCompensationListener.newPacket(protocol.getEntityId());
 
-        CheckThread.run(() -> {
+        CheckThread.run(protocol, () -> {
             protocol.transactionBoot = true;
 
             PluginBase.runDelayedTask(protocol, () -> {

@@ -21,7 +21,7 @@ public class InventoryEvent implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     private void ItemDrop(PlayerDropItemEvent e) {
         PlayerProtocol p = PluginBase.getProtocol(e.getPlayer(), true);
-        CheckThread.run(() -> p.executeRunners(e.isCancelled(), e));
+        CheckThread.run(null, () -> p.executeRunners(e.isCancelled(), e));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -31,13 +31,15 @@ public class InventoryEvent implements Listener {
         if (BlockUtils.hasMaterial(item)) {
             Player n = (Player) e.getWhoClicked();
             PlayerProtocol p = PluginBase.getProtocol(n, true);
-            CheckThread.run(() -> p.executeRunners(false, e));
+            CheckThread.run(null, () -> p.executeRunners(false, e));
 
             if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
                 ClickType click = e.getClick();
-                String title = MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_13)
-                        ? StringUtils.getClearColorString(n.getOpenInventory().getTitle())
-                        : n.getOpenInventory().getTitle();
+                String title = p.getOpenInventoryTitle("");
+
+                if (MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_13)) {
+                    title = StringUtils.getClearColorString(title);
+                }
                 int slot = e.getSlot();
 
                 for (InventoryMenu menu : PluginBase.menus) {

@@ -13,7 +13,7 @@ public class VelocityEvent implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void Event(PlayerVelocityEvent e) {
-        CheckThread.run(() -> event(
+        CheckThread.run(null, () -> event(
                 new CPlayerVelocityEvent(
                         e.getPlayer(),
                         e.getVelocity()

@@ -24,13 +24,13 @@ public class CPlayerInventory implements PlayerInventory {
         this.inventory = inventory;
     }
 
-    public @Nullable ItemStack @NotNull [] getArmorContents() {
+    public @Nullable ItemStack[] getArmorContents() {
         return this.inventory == null
                 ? new ItemStack[]{}
                 : this.inventory.getArmorContents();
     }
 
-    public @Nullable ItemStack @NotNull [] getExtraContents() {
+    public @Nullable ItemStack[] getExtraContents() {
         return this.inventory == null
                 ? new ItemStack[]{}
                 : this.inventory.getExtraContents();
@@ -114,25 +114,25 @@ public class CPlayerInventory implements PlayerInventory {
         }
     }
 
-    public @Nullable ItemStack @NotNull [] getContents() {
+    public @Nullable ItemStack[] getContents() {
         return this.inventory == null
                 ? new ItemStack[]{}
                 : this.inventory.getContents();
     }
 
-    public void setContents(@Nullable ItemStack @NotNull [] itemStacks) throws IllegalArgumentException {
+    public void setContents(@Nullable ItemStack[] itemStacks) throws IllegalArgumentException {
         if (this.inventory != null) {
             this.inventory.setContents(itemStacks);
         }
     }
 
-    public @Nullable ItemStack @NotNull [] getStorageContents() {
+    public @Nullable ItemStack[] getStorageContents() {
         return this.inventory == null
                 ? new ItemStack[]{}
                 : this.inventory.getStorageContents();
     }
 
-    public void setStorageContents(@Nullable ItemStack @NotNull [] itemStacks) throws IllegalArgumentException {
+    public void setStorageContents(@Nullable ItemStack[] itemStacks) throws IllegalArgumentException {
         if (this.inventory != null) {
             this.inventory.setStorageContents(itemStacks);
         }

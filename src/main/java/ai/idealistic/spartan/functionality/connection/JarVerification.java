@@ -3,7 +3,6 @@ package ai.idealistic.spartan.functionality.connection;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.functionality.moderation.AwarenessNotifications;
 import ai.idealistic.spartan.functionality.server.Permissions;
-import ai.idealistic.spartan.functionality.server.PluginBase;
 import ai.idealistic.spartan.utils.java.RequestUtils;
 import ai.idealistic.spartan.utils.java.StringUtils;
 import org.bukkit.Bukkit;
@@ -17,24 +16,11 @@ public class JarVerification {
     private static boolean valid = true;
 
     public static void run(Plugin plugin) {
-        if (!IDs.enabled) {
-            PluginBase.connectionThread.execute(() -> {
-                int userID = CloudConnections.getUserIdentification();
-
-                if (userID <= 0) {
-                    valid = false;
-                }
-            });
-        }
-
         if (IDs.enabled) {
-            if (isValid(plugin)) {
-                PluginAddons.refresh();
-            } else {
+            if (!isValid(plugin)) {
                 Bukkit.getPluginManager().disablePlugin(plugin);
             }
-        } else if (!PluginAddons.refresh()
-                && !isValid(plugin)) {
+        } else if (!isValid(plugin)) {
             String message = "This version of " + plugin.getName() + " does not have a license."
                     + " If this download is pirated, please consider purchasing the plugin"
                     + " when your server starts making enough money. We also sell on BuiltByBit"
@@ -67,9 +53,7 @@ public class JarVerification {
                 }
             }
         } catch (Exception e) {
-            if (IDs.canAdvertise()) {
-                AwarenessNotifications.forcefullySend(e.getMessage());
-            }
+            AwarenessNotifications.forcefullySend(e.getMessage());
         }
         return b;
     }

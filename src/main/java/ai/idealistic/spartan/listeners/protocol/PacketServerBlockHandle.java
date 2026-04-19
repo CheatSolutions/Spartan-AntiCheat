@@ -3,6 +3,8 @@ package ai.idealistic.spartan.listeners.protocol;
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.event.ServerBlockChange;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.compatibility.necessary.protocollib.BlockDataPlib;
+import ai.idealistic.spartan.compatibility.necessary.protocollib.BlockPositionPlib;
 import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.PluginBase;
@@ -31,10 +33,10 @@ public class PacketServerBlockHandle extends PacketAdapter {
             return;
         }
         PacketContainer packet = event.getPacket();
-        BlockPosition blockPosition = packet.getBlockPositionModifier().read(0);
-        WrappedBlockData blockData = packet.getBlockData().read(0);
+        BlockPosition blockPosition = BlockPositionPlib.getSafeBlockPosition(packet, 0);
+        WrappedBlockData blockData = BlockDataPlib.getSafeBlockData(packet, 0);
         ServerBlockChange serverBlockChange = new ServerBlockChange(blockPosition, blockData.getType());
-        CheckThread.run(() -> protocol.packetWorld.worldChange(serverBlockChange));
+        CheckThread.run(protocol, () -> protocol.packetWorld.worldChange(serverBlockChange));
     }
 
 }

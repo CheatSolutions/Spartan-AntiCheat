@@ -3,7 +3,7 @@ package ai.idealistic.spartan.listeners.protocol;
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.event.ServerBlockChange;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
-import ai.idealistic.spartan.compatibility.necessary.protocollib.ProtocolLib;
+import ai.idealistic.spartan.compatibility.necessary.protocollib.*;
 import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
@@ -48,24 +48,25 @@ public class BlockPlaceListener extends PacketAdapter {
         }
         PacketContainer packet = event.getPacket();
 
-        CheckThread.run(() -> {
+        CheckThread.run(protocol, () -> {
             if (isPlacingBlock(packet)) {
-                if (packet.getBlockPositionModifier().getValues().isEmpty() && packet.getMovingBlockPositions().getValues().isEmpty()) {
+                if (packet.getBlockPositionModifier().size() == 0
+                        && packet.getMovingBlockPositions().size() == 0) {
                     // stub for debug
                 } else {
                     BlockPosition blockPosition = new BlockPosition(0, 0, 0);
                     EnumWrappers.Direction direction = null;
-                    if (!packet.getMovingBlockPositions().getValues().isEmpty()) {
-                        blockPosition = packet.getMovingBlockPositions().read(0).getBlockPosition();
-                        direction = packet.getMovingBlockPositions().read(0).getDirection();
+                    if (packet.getMovingBlockPositions().size() > 0) {
+                        blockPosition = MovingBlockPositionsPlib.getSafeMovingBlockPositions(packet, 0).getBlockPosition();
+                        direction = MovingBlockPositionsPlib.getSafeMovingBlockPositions(packet, 0).getDirection();
                     }
-                    if (!packet.getBlockPositionModifier().getValues().isEmpty()) {
-                        blockPosition = packet.getBlockPositionModifier().read(0);
-                        if (packet.getDirections().getValues().isEmpty()) {
-                            int directionInt = packet.getIntegers().read(0);
+                    if (packet.getBlockPositionModifier().size() > 0) {
+                        blockPosition = BlockPositionPlib.getSafeBlockPosition(packet, 0);
+                        if (packet.getDirections().size() == 0) {
+                            int directionInt = BackPlib.getSafeInt(packet, 0);
                             direction = EnumWrappers.Direction.values()[directionInt];
                         } else {
-                            direction = packet.getDirections().read(0);
+                            direction = DirectionPlib.getSafeDirection(packet, 0);
                         }
                     }
 
@@ -83,11 +84,11 @@ public class BlockPlaceListener extends PacketAdapter {
 
                     if (block == null) return;
                     boolean isMainHand = !MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_9)
-                            || event.getPacket().getHands().read(0) == EnumWrappers.Hand.MAIN_HAND;
+                            || HandsPlib.getSafeHand(event.getPacket(), 0) == EnumWrappers.Hand.MAIN_HAND;
 
                     ItemStack itemInHand = MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_9)
                             ? (isMainHand ? protocol.getInventory().getItemInMainHand()
-                            : protocol.getInventory().getItemInOffHand()) : player.getItemInHand();
+                               : protocol.getInventory().getItemInOffHand()) : player.getItemInHand();
                     if (itemInHand.getType().isBlock()) {
                         if (!isInPlayer(protocol.getLocation(), block.getLocation())) {
                             Block blockAgainst = player.getLocation().getBlock();
@@ -119,19 +120,19 @@ public class BlockPlaceListener extends PacketAdapter {
 
     private boolean isPlacingBlock(PacketContainer packet) {
         BlockPosition blockPosition = new BlockPosition(0, 0, 0);
-        if (packet.getHands().getValues().isEmpty()) {
-            if (!packet.getMovingBlockPositions().getValues().isEmpty()) {
-                blockPosition = packet.getMovingBlockPositions().read(0).getBlockPosition();
+        if (packet.getHands().size() == 0) {
+            if (packet.getMovingBlockPositions().size() > 0) {
+                blockPosition = MovingBlockPositionsPlib.getSafeMovingBlockPositions(packet, 0).getBlockPosition();
             }
-            if (!packet.getBlockPositionModifier().getValues().isEmpty()) {
-                blockPosition = packet.getBlockPositionModifier().read(0);
+            if (packet.getBlockPositionModifier().size() > 0) {
+                blockPosition = BlockPositionPlib.getSafeBlockPosition(packet, 0);
             }
 
             return (blockPosition.getY() != -1);
         } else {
             return ((packet.getType().equals(PacketType.Play.Client.USE_ITEM)
                     || packet.getType().toString().contains("USE_ITEM_ON"))
-                    && packet.getHands().read(0).equals(EnumWrappers.Hand.MAIN_HAND));
+                    && HandsPlib.getSafeHand(packet, 0).equals(EnumWrappers.Hand.MAIN_HAND));
         }
     }
 

@@ -1,6 +1,9 @@
 package ai.idealistic.spartan.functionality.concurrent;
 
 import ai.idealistic.spartan.Register;
+import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.functionality.server.MultiVersion;
+import ai.idealistic.spartan.functionality.server.PluginBase;
 import ai.idealistic.spartan.utils.java.OverflowMap;
 import ai.idealistic.spartan.utils.java.TryIgnore;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -9,6 +12,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.UtilityClass;
 import lombok.extern.java.Log;
+import org.bukkit.Bukkit;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -23,7 +27,9 @@ public class CheckThread {
     private static final char INNER_CLASS_SEPARATOR_CHAR = '$';
     public static int STOP_WATCH_TIME_MILLIS = 750;
     @Getter
-    private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(
+    private static final ScheduledExecutorService scheduler = MultiVersion.folia
+            ? null
+            : Executors.newSingleThreadScheduledExecutor(
             new ThreadFactoryBuilder().setNameFormat(Register.pluginName + " Thread %d").build()
     );
     private static final Map<String, Boolean> processedErrors = new OverflowMap<>(
@@ -32,23 +38,40 @@ public class CheckThread {
     );
 
     public static void shutdown() {
-        TryIgnore.ignore(scheduler::shutdownNow);
+        if (!MultiVersion.folia) {
+            TryIgnore.ignore(scheduler::shutdownNow);
+        }
     }
 
-    public static Future<?> run(Runnable runnable) {
-        return scheduler.submit(new DecoratedRunnable(runnable));
-    }
-
-    public static <T> Future<T> run(Callable<T> callable) {
-        return scheduler.submit(new DecoratedCallable<>(callable));
+    public static Future<?> run(PlayerProtocol p, Runnable runnable) {
+        if (MultiVersion.folia) {
+            PluginBase.runTask(p, new DecoratedRunnable(runnable));
+            return null;
+        } else {
+            return scheduler.submit(new DecoratedRunnable(runnable));
+        }
     }
 
     public static ScheduledFuture<?> later(Runnable runnable, long delay) {
-        return scheduler.schedule(new DecoratedRunnable(runnable), delay, TimeUnit.MILLISECONDS);
+        DecoratedRunnable decorated = new DecoratedRunnable(runnable);
+
+        if (MultiVersion.folia) {
+            Bukkit.getAsyncScheduler().runDelayed(Register.plugin, task -> decorated.run(), delay, TimeUnit.MILLISECONDS);
+            return null;
+        } else {
+            return scheduler.schedule(decorated, delay, TimeUnit.MILLISECONDS);
+        }
     }
 
     public static ScheduledFuture<?> timer(Runnable runnable, long delay, long period) {
-        return scheduler.scheduleAtFixedRate(new DecoratedRunnable(runnable), delay, period, TimeUnit.MILLISECONDS);
+        DecoratedRunnable decorated = new DecoratedRunnable(runnable);
+
+        if (MultiVersion.folia) {
+            PluginBase.runRepeatingTask(decorated, delay, period);
+            return null;
+        } else {
+            return scheduler.scheduleAtFixedRate(decorated, delay, period, TimeUnit.MILLISECONDS);
+        }
     }
 
     public static void cancel(ScheduledFuture<?> timer) {
@@ -89,44 +112,6 @@ public class CheckThread {
                     long after = System.currentTimeMillis() - start;
                     if (after > STOP_WATCH_TIME_MILLIS) {
                         String l = CheckThread.toString(originalRunnable);
-                        if (l.length() > 26) l = l.substring(0, 26) + "...";
-                        log.warning("Busy task " + l + ", it was performed " + after + "ms.");
-                    }
-                }
-            }
-        }
-    }
-
-    @ToString
-    public static class DecoratedCallable<T> implements Callable<T> {
-        @Setter
-        private static Function<Callable<?>, Callable<?>> hotfixDecorator = callable -> callable;
-
-        private final Callable<T> originalCallable;
-        private final Callable<T> decoratedCallable;
-
-        @SuppressWarnings("unchecked")
-        public DecoratedCallable(Callable<T> originalCallable) {
-            this.originalCallable = originalCallable;
-            this.decoratedCallable = (Callable<T>) hotfixDecorator.apply(originalCallable);
-        }
-
-        @Override
-        public T call() throws Exception {
-            long start = System.currentTimeMillis();
-            try {
-                return decoratedCallable.call();
-            } catch (Throwable e) {
-                if (debug || processedErrors.putIfAbsent(e.getMessage(), true) == null) {
-                    log.severe("Error while accepting to call method: " + CheckThread.toString(originalCallable));
-                    e.printStackTrace();
-                }
-                throw e;
-            } finally {
-                if (debug) {
-                    long after = System.currentTimeMillis() - start;
-                    if (after > STOP_WATCH_TIME_MILLIS) {
-                        String l = CheckThread.toString(originalCallable);
                         if (l.length() > 26) l = l.substring(0, 26) + "...";
                         log.warning("Busy task " + l + ", it was performed " + after + "ms.");
                     }

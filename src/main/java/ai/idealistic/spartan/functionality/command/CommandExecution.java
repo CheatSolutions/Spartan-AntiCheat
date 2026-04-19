@@ -6,7 +6,6 @@ import ai.idealistic.spartan.abstraction.check.CheckEnums;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.api.Permission;
 import ai.idealistic.spartan.functionality.connection.DiscordServer;
-import ai.idealistic.spartan.functionality.connection.PluginAddons;
 import ai.idealistic.spartan.functionality.moderation.DetectionNotifications;
 import ai.idealistic.spartan.functionality.moderation.Wave;
 import ai.idealistic.spartan.functionality.moderation.clickable.ClickableMessage;
@@ -52,20 +51,20 @@ public class CommandExecution implements CommandExecutor {
                     sender,
                     command,
                     "Click to learn more!",
-                    PluginAddons.pluginURL
+                    Register.pluginURL
             );
             if (documentation) {
                 ClickableMessage.sendURL(
                         sender,
                         "§8§l<> §7Required command argument",
                         "Click to learn more!",
-                        PluginAddons.pluginURL
+                        Register.pluginURL
                 );
                 ClickableMessage.sendURL(
                         sender,
                         "§8§l[] §7Optional command argument",
                         "Click to learn more!",
-                        PluginAddons.pluginURL
+                        Register.pluginURL
                 );
             }
             return true;
@@ -115,43 +114,43 @@ public class CommandExecution implements CommandExecutor {
                                     sender,
                                     "§cToggle Checks §7(Click)",
                                     "Click this command to toggle a check and its detections.",
-                                    "/" + PluginAddons.synCommand
+                                    "/" + Register.synCommand
                             );
                             ClickableMessage.sendCommand(
                                     sender,
                                     "§cToggle Details §7(Click)",
                                     "Click this command to toggle a check's detection details.",
-                                    "/" + PluginAddons.synCommand
+                                    "/" + Register.synCommand
                             );
                             ClickableMessage.sendCommand(
                                     sender,
                                     "§cToggle Preventions §7(Click)",
                                     "Click this command to toggle a check's preventions.",
-                                    "/" + PluginAddons.synCommand
+                                    "/" + Register.synCommand
                             );
                             ClickableMessage.sendCommand(
                                     sender,
                                     "§cToggle Punishments §7(Click)",
                                     "Click this command to toggle a check's punishments.",
-                                    "/" + PluginAddons.synCommand
+                                    "/" + Register.synCommand
                             );
                             ClickableMessage.sendCommand(
                                     sender,
                                     "§cToggle Detections §7(Click)",
                                     "Click this command to toggle a check's specific detections.",
-                                    "/" + PluginAddons.synCommand
+                                    "/" + Register.synCommand
                             );
                             ClickableMessage.sendCommand(
                                     sender,
                                     "§cToggle Settings §7(Click)",
                                     "Click this command to toggle general settings.",
-                                    "/" + PluginAddons.synCommand
+                                    "/" + Register.synCommand
                             );
                             ClickableMessage.sendCommand(
                                     sender,
                                     "§cView Statistics §7(Click)",
                                     "Click this command to view the plugin's statistics.",
-                                    "/" + PluginAddons.synCommand
+                                    "/" + Register.synCommand
                             );
                         }
                         if (Permissions.has(protocol.bukkit(), Permission.USE_BYPASS)) {
@@ -342,7 +341,7 @@ public class CommandExecution implements CommandExecutor {
                         );
                         return true;
                     }
-                    if (PluginAddons.isFreeEdition()) {
+                    if (Register.isFreeEdition()) {
                         PluginBase.chargeMenu.open(protocol);
                     } else {
                         ClickableMessage.sendURL(

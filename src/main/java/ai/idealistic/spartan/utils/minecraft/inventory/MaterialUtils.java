@@ -5,6 +5,7 @@ import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.abstraction.world.ServerBlock;
 import ai.idealistic.spartan.abstraction.world.ServerLocation;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
+import ai.idealistic.spartan.functionality.server.TPS;
 import ai.idealistic.spartan.utils.math.AlgebraUtils;
 import ai.idealistic.spartan.utils.minecraft.entity.PotionEffectUtils;
 import ai.idealistic.spartan.utils.minecraft.world.BlockUtils;
@@ -317,7 +318,7 @@ public class MaterialUtils {
 
             // Separator
             double ticks = Math.ceil(1.0 / damage);
-            return AlgebraUtils.integerRound(ticks * 50L);
+            return AlgebraUtils.integerRound(ticks * TPS.tickTime);
         }
         return -1L;
     }

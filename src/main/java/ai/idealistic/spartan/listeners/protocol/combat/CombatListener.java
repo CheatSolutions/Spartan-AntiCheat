@@ -3,6 +3,8 @@ package ai.idealistic.spartan.listeners.protocol.combat;
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.event.PlayerUseEvent;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.compatibility.necessary.protocollib.BackPlib;
+import ai.idealistic.spartan.compatibility.necessary.protocollib.EntityUseActionPlib;
 import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.moderation.AwarenessNotifications;
 import ai.idealistic.spartan.functionality.server.Config;
@@ -51,7 +53,7 @@ public class CombatListener extends PacketAdapter {
                 return;
             }
             PacketContainer packet = event.getPacket();
-            int entityId = packet.getIntegers().read(0);
+            int entityId = BackPlib.getSafeInt(packet, 0);
 
             Player target = null;
             for (Player player : Bukkit.getOnlinePlayers()) {
@@ -60,9 +62,9 @@ public class CombatListener extends PacketAdapter {
                     break;
                 }
             }
-            if ((!packet.getEntityUseActions().getValues().isEmpty()) ?
-                    packet.getEntityUseActions().read(0).equals(EnumWrappers.EntityUseAction.ATTACK)
-                    : packet.getEnumEntityUseActions().read(0).getAction().equals(
+            if (packet.getEntityUseActions().size() > 0 ?
+                    EntityUseActionPlib.getSafeEntityUseActions(packet, 0).equals(EnumWrappers.EntityUseAction.ATTACK)
+                    : EntityUseActionPlib.getSafeEnumEntityUseActions(packet, 0).getAction().equals(
                     EnumWrappers.EntityUseAction.ATTACK)) {
                 if (protocol.isSDesync()) {
                     AwarenessNotifications.optionallySend(protocol.bukkit().getName()
@@ -73,7 +75,7 @@ public class CombatListener extends PacketAdapter {
                 }
                 if (target != null) {
                     Player targetFinal = target;
-                    CheckThread.run(() -> CombatEvent.use(
+                    CheckThread.run(protocol, () -> CombatEvent.use(
                             new PlayerUseEvent(
                                     event.getPlayer(),
                                     targetFinal,
@@ -95,7 +97,7 @@ public class CombatListener extends PacketAdapter {
                     && protocol.isBedrockPlayer()) {
                 return;
             }
-            int entityId = event.getPacket().getIntegers().read(0);
+            int entityId = BackPlib.getSafeInt(event.getPacket(), 0);
 
             pendingAttacks.entrySet().removeIf(entry -> {
                 UUID playerUUID = entry.getKey();
@@ -114,7 +116,7 @@ public class CombatListener extends PacketAdapter {
                                 0.0D
                         );
                         event1.setCancelled(event.isCancelled());
-                        CheckThread.run(() -> CombatEvent.event(
+                        CheckThread.run(protocol, () -> CombatEvent.event(
                                 event1,
                                 true
                         ));

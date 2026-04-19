@@ -3,7 +3,6 @@ package ai.idealistic.spartan.functionality.tracking;
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.data.Buffer;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
-import ai.idealistic.spartan.functionality.connection.PluginAddons;
 import ai.idealistic.spartan.functionality.moderation.AwarenessNotifications;
 import ai.idealistic.spartan.functionality.server.Permissions;
 import ai.idealistic.spartan.utils.java.OverflowMap;
@@ -24,7 +23,7 @@ public class DetectionCharge {
     );
 
     public static boolean charge(PlayerProtocol protocol) {
-        if (PluginAddons.isFreeEdition()) {
+        if (Register.isFreeEdition()) {
             Buffer.IndividualBuffer buffer = map.computeIfAbsent(
                     protocol.getUUID(),
                     uuid -> new Buffer.IndividualBuffer()
@@ -43,7 +42,7 @@ public class DetectionCharge {
     }
 
     public static boolean has() {
-        return !PluginAddons.isFreeEdition() || charge > System.currentTimeMillis();
+        return !Register.isFreeEdition() || charge > System.currentTimeMillis();
     }
 
     public static long remaining() {
@@ -51,7 +50,7 @@ public class DetectionCharge {
     }
 
     public static boolean isLow() {
-        return PluginAddons.isFreeEdition() && remaining() <= notify;
+        return Register.isFreeEdition() && remaining() <= notify;
     }
 
     public static void notify(PlayerProtocol protocol) {

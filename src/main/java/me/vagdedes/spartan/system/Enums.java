@@ -1,4 +1,4 @@
-package me.vagdedes.spartan.api.system;
+package me.vagdedes.spartan.system;
 
 import ai.idealistic.spartan.abstraction.check.CheckEnums;
 import lombok.Getter;

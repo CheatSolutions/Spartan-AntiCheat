@@ -71,9 +71,6 @@ public class CloudBase {
             connectionRefreshCooldown = ms + refreshTime;
 
             // Separator
-            PluginBase.connectionThread.executeIfUnknownThreadElseHere(PluginAddons::refresh);
-
-            // Separator
             PluginBase.connectionThread.executeIfUnknownThreadElseHere(() -> {
                 List<PlayerProtocol> protocols = Permissions.getStaff();
 

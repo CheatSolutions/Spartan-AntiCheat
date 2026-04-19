@@ -33,15 +33,22 @@ class ServerSchedulers {
             if (protocol != null) {
                 if (Register.isPluginEnabled()) {
                     Location location = protocol.getLocation();
-                    Bukkit.getRegionScheduler()
-                            .execute(Register.plugin,
-                                    location.getWorld(),
-                                    ServerLocation.getChunkPos(location.getBlockX()),
-                                    ServerLocation.getChunkPos(location.getBlockZ()),
-                                    runnable);
+
+                    if (location != null) {
+                        Bukkit.getRegionScheduler()
+                                .execute(Register.plugin,
+                                        location.getWorld(),
+                                        ServerLocation.getChunkPos(location.getBlockX()),
+                                        ServerLocation.getChunkPos(location.getBlockZ()),
+                                        runnable);
+                    }
                 }
             } else {
-                Bukkit.getGlobalRegionScheduler().run(Register.plugin, consumer -> runnable.run());
+                if (sync) {
+                    Bukkit.getGlobalRegionScheduler().run(Register.plugin, consumer -> runnable.run());
+                } else {
+                    runnable.run();
+                }
             }
         }
     }
@@ -77,12 +84,17 @@ class ServerSchedulers {
                 if (repetition == -1L) {
                     if (protocol != null) {
                         Location location = protocol.getLocation();
-                        return Bukkit.getRegionScheduler()
-                                .runDelayed(Register.plugin,
-                                        location.getWorld(),
-                                        ServerLocation.getChunkPos(location.getBlockX()),
-                                        ServerLocation.getChunkPos(location.getBlockZ()),
-                                        consumer -> runnable.run(), start);
+
+                        if (location != null) {
+                            return Bukkit.getRegionScheduler()
+                                    .runDelayed(Register.plugin,
+                                            location.getWorld(),
+                                            ServerLocation.getChunkPos(location.getBlockX()),
+                                            ServerLocation.getChunkPos(location.getBlockZ()),
+                                            consumer -> runnable.run(), start);
+                        } else {
+                            return null;
+                        }
                     } else {
                         return Bukkit.getGlobalRegionScheduler()
                                 .runDelayed(Register.plugin, consumer -> runnable.run(), start);
@@ -90,12 +102,17 @@ class ServerSchedulers {
                 } else {
                     if (protocol != null) {
                         Location location = protocol.getLocation();
-                        return Bukkit.getRegionScheduler()
-                                .runAtFixedRate(Register.plugin,
-                                        location.getWorld(),
-                                        ServerLocation.getChunkPos(location.getBlockX()),
-                                        ServerLocation.getChunkPos(location.getBlockZ()),
-                                        consumer -> runnable.run(), start, repetition);
+
+                        if (location != null) {
+                            return Bukkit.getRegionScheduler()
+                                    .runAtFixedRate(Register.plugin,
+                                            location.getWorld(),
+                                            ServerLocation.getChunkPos(location.getBlockX()),
+                                            ServerLocation.getChunkPos(location.getBlockZ()),
+                                            consumer -> runnable.run(), start, repetition);
+                        } else {
+                            return null;
+                        }
                     } else {
                         return Bukkit.getGlobalRegionScheduler()
                                 .runAtFixedRate(Register.plugin, consumer -> runnable.run(), start, repetition);

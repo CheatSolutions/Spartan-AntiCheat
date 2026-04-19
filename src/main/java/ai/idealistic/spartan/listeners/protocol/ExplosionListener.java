@@ -3,6 +3,7 @@ package ai.idealistic.spartan.listeners.protocol;
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.abstraction.world.ServerLocation;
+import ai.idealistic.spartan.compatibility.necessary.protocollib.BackPlib;
 import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.PluginBase;
@@ -14,8 +15,6 @@ import com.comphenix.protocol.events.PacketEvent;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.List;
-
 public class ExplosionListener extends PacketAdapter {
 
     public ExplosionListener() {
@@ -26,9 +25,8 @@ public class ExplosionListener extends PacketAdapter {
     @Override
     public void onPacketSending(PacketEvent event) {
         PacketContainer packet = event.getPacket();
-        List<Double> d = packet.getDoubles().getValues();
 
-        if (d.size() >= 3) {
+        if (packet.getDoubles().size() >= 3) {
             Player player = event.getPlayer();
             PlayerProtocol protocol = PluginBase.getProtocol(player);
 
@@ -36,10 +34,15 @@ public class ExplosionListener extends PacketAdapter {
                     && protocol.isBedrockPlayer()) {
                 return;
             }
-            Location l = new Location(player.getWorld(), d.get(0), d.get(1), d.get(2));
+            Location l = new Location(
+                    player.getWorld(),
+                    BackPlib.getSafeDouble(packet, 0),
+                    BackPlib.getSafeDouble(packet, 1),
+                    BackPlib.getSafeDouble(packet, 2)
+            );
 
             if (ServerLocation.distanceSquared(l, protocol.getLocation()) < 10) {
-                CheckThread.run(() -> {
+                CheckThread.run(protocol, () -> {
                     protocol.getComponentY().explosionTick = true;
                     protocol.getComponentXZ().explosionTick = true;
                 });

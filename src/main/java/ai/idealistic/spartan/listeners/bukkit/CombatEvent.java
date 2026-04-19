@@ -28,7 +28,7 @@ public class CombatEvent implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void Event(EntityDamageByEntityEvent e) {
-        CheckThread.run(() -> event(e, false));
+        CheckThread.run(null, () -> event(e, false));
     }
 
     public static void event(EntityDamageByEntityEvent e, boolean packets) {

@@ -40,23 +40,15 @@ public class PlayerUtils {
     public static final double
             optimizationY = MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_9) ? 0.005 : 0.003,
             airDrag = AlgebraUtils.floatDouble(0.98),
-            waterDrag = AlgebraUtils.floatDouble(0.8),
-            lavaDrag = 0.5,
             jumpAcceleration = AlgebraUtils.floatDouble(0.42),
             airAcceleration = 0.08,
-            airAccelerationUnloaded = AlgebraUtils.floatDouble(0.098),
-            slowFallAcceleration = 0.01,
-            liquidAcceleration = 0.02,
             chunk = 16.0,
-            climbingUpDefault = 0.12 * airDrag, // 0.11760
-            climbingDownDefault = AlgebraUtils.floatDouble(0.15),
-            honeyBlockDownDefault = AlgebraUtils.floatDouble(0.13) * airDrag,
-            webBlockDownDefault = AlgebraUtils.floatDouble(0.64) * airDrag,
             maxJumpingMotionDifference;
 
     public static final int
             playerInventorySlots = (9 * 5) + 1,
-            height,
+            maxHeight,
+    minHeight,
             fallDamageAboveBlocks = 3;
 
     private static final Map<Byte, List<Double>> jumpsValues = new LinkedHashMap<>();
@@ -108,17 +100,21 @@ public class PlayerUtils {
             List<World> worlds = Bukkit.getWorlds();
 
             if (!worlds.isEmpty()) {
-                int max = 256;
+                int max = 256, min = 0;
 
                 for (World world : worlds) {
                     max = Math.max(world.getMaxHeight(), max);
+                    min = Math.min(world.getMinHeight(), min);
                 }
-                height = max;
+                maxHeight = max;
+                minHeight = min;
             } else {
-                height = 256;
+                maxHeight = 256;
+                minHeight = 0;
             }
         } else {
-            height = 256;
+            maxHeight = 256;
+            minHeight = 0;
         }
     }
 

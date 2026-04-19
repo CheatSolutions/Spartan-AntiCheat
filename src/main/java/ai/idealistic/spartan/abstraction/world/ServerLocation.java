@@ -24,7 +24,7 @@ public class ServerLocation implements Cloneable {
     public static final Location bukkitDefault = new Location(
             Bukkit.getWorlds().get(0),
             AlgebraUtils.randomInteger(Integer.MIN_VALUE, Integer.MAX_VALUE),
-            AlgebraUtils.randomInteger(0, 256),
+            AlgebraUtils.randomInteger(PlayerUtils.minHeight, PlayerUtils.maxHeight),
             AlgebraUtils.randomInteger(Integer.MIN_VALUE, Integer.MAX_VALUE)
     );
 
@@ -133,7 +133,7 @@ public class ServerLocation implements Cloneable {
         if (ChunksEvent.heightSupport) {
             return Math.max(this.world.getMinHeight(), Math.min(getBlockY(), this.world.getMaxHeight()));
         } else {
-            return Math.max(0, Math.min(getBlockY(), PlayerUtils.height));
+            return Math.max(0, Math.min(getBlockY(), PlayerUtils.maxHeight));
         }
     }
 
@@ -199,7 +199,7 @@ public class ServerLocation implements Cloneable {
 
         if (ChunksEvent.heightSupport ?
                 blockY >= this.world.getMinHeight() && blockY <= this.world.getMaxHeight() :
-                blockY >= 0 && blockY <= PlayerUtils.height) {
+                blockY >= 0 && blockY <= PlayerUtils.maxHeight) {
             if (PluginBase.packetsEnabled()) {
                 if (PluginBase.isSynchronised()) {
                     return setBlock();

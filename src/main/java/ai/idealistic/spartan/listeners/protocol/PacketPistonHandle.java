@@ -2,6 +2,7 @@ package ai.idealistic.spartan.listeners.protocol;
 
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.compatibility.necessary.protocollib.BlockPositionPlib;
 import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.PluginBase;
@@ -29,11 +30,10 @@ public class PacketPistonHandle extends PacketAdapter {
                     && protocol.isBedrockPlayer()) {
                 return;
             }
-            Location blockLocation = packet.getBlockPositionModifier()
-                    .read(0)
+            Location blockLocation = BlockPositionPlib.getSafeBlockPosition(packet, 0)
                     .toLocation(protocol.getWorld());
 
-            CheckThread.run(() -> {
+            CheckThread.run(protocol, () -> {
                 protocol.getComponentY().pistonHandle = true;
 
                 if (isPlayerInBox(protocol.getLocation(), blockLocation, 5)) {

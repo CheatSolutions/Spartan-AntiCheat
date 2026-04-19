@@ -12,21 +12,17 @@ import ai.idealistic.spartan.api.Permission;
 import ai.idealistic.spartan.compatibility.Compatibility;
 import ai.idealistic.spartan.functionality.command.CommandExecution;
 import ai.idealistic.spartan.functionality.connection.DiscordServer;
-import ai.idealistic.spartan.functionality.connection.PluginAddons;
 import ai.idealistic.spartan.functionality.moderation.clickable.ClickableMessage;
 import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.Permissions;
 import ai.idealistic.spartan.functionality.server.PluginBase;
-import ai.idealistic.spartan.functionality.server.TPS;
 import ai.idealistic.spartan.functionality.tracking.DetectionCharge;
 import ai.idealistic.spartan.functionality.tracking.ResearchEngine;
 import ai.idealistic.spartan.utils.java.OverflowMap;
 import ai.idealistic.spartan.utils.java.TimeUtils;
-import ai.idealistic.spartan.utils.math.AlgebraUtils;
 import ai.idealistic.spartan.utils.minecraft.inventory.MaterialUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -93,7 +89,7 @@ public class PlayerInfo extends InventoryMenu {
                     4
             );
             for (CheckEnums.HackCategoryType checkType : CheckEnums.HackCategoryType.values()) {
-                addChecks(slots[checkType.ordinal()], isOnline, target, profile, lore, checkType);
+                addChecks(slots[checkType.ordinal()], isOnline, target, lore, checkType);
             }
 
             // Separator
@@ -133,7 +129,6 @@ public class PlayerInfo extends InventoryMenu {
     private void addChecks(int slot,
                            boolean isOnline,
                            PlayerProtocol protocol,
-                           PlayerProfile profile,
                            List<String> lore,
                            CheckEnums.HackCategoryType checkType) {
         lore.clear();
@@ -207,17 +202,19 @@ public class PlayerInfo extends InventoryMenu {
         Collection<PlayerProtocol> protocols = PluginBase.getProtocols();
 
         if (!protocols.isEmpty()) {
+            String expectedTitle = PlayerInfo.menu + targetName;
+
             for (PlayerProtocol protocol : protocols) {
                 if (cooldowns.canDo("player-info=" + protocol.getUUID())) {
-                    InventoryView inventoryView = protocol.bukkit().getOpenInventory();
-
-                    if (inventoryView.getTitle().equals(PlayerInfo.menu + targetName)) {
-                        cooldowns.add(
-                                "player-info=" + protocol.getUUID(),
-                                AlgebraUtils.integerRound(TPS.maximum)
-                        );
-                        PluginBase.playerInfo.open(protocol, targetName);
-                    }
+                    PluginBase.runTask(protocol, () -> {
+                        if (protocol.getOpenInventoryTitle("").equals(expectedTitle)) {
+                            cooldowns.add(
+                                    "player-info=" + protocol.getUUID(),
+                                    10
+                            );
+                            PluginBase.playerInfo.open(protocol, targetName);
+                        }
+                    });
                 }
             }
         }
@@ -259,8 +256,8 @@ public class PlayerInfo extends InventoryMenu {
         } else if (item.equals("Discord")) {
             protocol.sendImportantMessage("§2§l" + DiscordServer.url);
             protocol.bukkit().closeInventory();
-        } else if (PluginAddons.isFreeEdition()) {
-            protocol.sendImportantMessage("§2§l" + PluginAddons.pluginURL);
+        } else if (Register.isFreeEdition()) {
+            protocol.sendImportantMessage("§2§l" + Register.pluginURL);
             protocol.bukkit().closeInventory();
         }
         return true;

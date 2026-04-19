@@ -9,7 +9,6 @@ import ai.idealistic.spartan.compatibility.manual.enchants.CustomEnchantsPlus;
 import ai.idealistic.spartan.compatibility.manual.enchants.EcoEnchants;
 import ai.idealistic.spartan.compatibility.manual.vanilla.Attributes;
 import ai.idealistic.spartan.compatibility.necessary.protocollib.ProtocolLib;
-import ai.idealistic.spartan.functionality.connection.PluginAddons;
 import ai.idealistic.spartan.functionality.moderation.DetectionNotifications;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
 import ai.idealistic.spartan.functionality.server.Permissions;
@@ -136,24 +135,6 @@ public abstract class CheckRunner extends CheckProcess {
                 builder.append(", ");
             }
             builder.append("Player has a scale attribute applied");
-        }
-        if (!PluginAddons.ownsCheck(this.hackType)) {
-            if (builder.length() > 0) {
-                builder.append(", ");
-            }
-            builder.append("Check '")
-                    .append(this.hackType.getCheck().getName())
-                    .append("' is not owned");
-        }
-        if (!PluginAddons.ownsEdition(this.protocol.getDataType())) {
-            if (builder.length() > 0) {
-                builder.append(", ");
-            }
-            builder.append("Edition '")
-                    .append(this.protocol.getDataType().toString())
-                    .append("' of the check '")
-                    .append(this.hackType.getCheck().hackType.toString())
-                    .append("' is not owned");
         }
         if (builder.length() > 0) {
             this.addInformationalDisableCause(builder.toString());

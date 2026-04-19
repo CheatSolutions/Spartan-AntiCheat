@@ -13,7 +13,7 @@ public class TridentEvent implements Listener {
     @EventHandler
     private void Event(PlayerRiptideEvent e) {
         PlayerProtocol protocol = PluginBase.getProtocol(e.getPlayer());
-        CheckThread.run(() -> event(
+        CheckThread.run(null, () -> event(
                 new CPlayerRiptideEvent(
                         protocol,
                         e.getItem(),

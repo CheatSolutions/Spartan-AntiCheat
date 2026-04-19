@@ -6,8 +6,6 @@ import ai.idealistic.spartan.abstraction.check.CheckEnums.HackType;
 import ai.idealistic.spartan.abstraction.inventory.InventoryMenu;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.api.Permission;
-import ai.idealistic.spartan.functionality.connection.PluginAddons;
-import ai.idealistic.spartan.functionality.moderation.clickable.ClickableMessage;
 import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import org.bukkit.Material;
@@ -27,17 +25,6 @@ public class EditionMenu extends InventoryMenu {
 
     @Override
     public boolean internalOpen(PlayerProtocol protocol, boolean permissionMessage, Object object) {
-        if (!PluginAddons.isSyn()) {
-            protocol.bukkit().closeInventory();
-            String missing = PluginAddons.synClick.replace(PluginAddons.synMissingPlaceholder, title);
-            ClickableMessage.sendURL(
-                    protocol.bukkit(),
-                    missing,
-                    missing + " (" + PluginAddons.synURL + ")",
-                    PluginAddons.synURL
-            );
-            return false;
-        }
         List<String> list = new ArrayList<>();
         int startingLine = 1;
 

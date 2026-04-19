@@ -18,7 +18,7 @@ public class MovementEvent implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void MoveEvent(PlayerMoveEvent e) {
-        CheckThread.run(() -> event(e, false));
+        CheckThread.run(null, () -> event(e, false));
     }
 
     public static void event(PlayerMoveEvent e, boolean packets) {

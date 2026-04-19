@@ -41,7 +41,7 @@ public class VehicleHandle extends PacketAdapter {
                 && protocol.isBedrockPlayer()) {
             return;
         }
-        CheckThread.run(() -> {
+        CheckThread.run(protocol, () -> {
             if (ProtocolTools.hasPosition(event.getPacket().getType()) && protocol.entityHandle) {
                 protocol.entityHandle = false;
             }

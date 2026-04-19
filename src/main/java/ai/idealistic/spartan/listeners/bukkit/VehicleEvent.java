@@ -16,7 +16,7 @@ public class VehicleEvent implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public static void enter(VehicleEnterEvent e) {
         if (!e.isCancelled()) {
-            CheckThread.run(() -> {
+            CheckThread.run(null, () -> {
                 Entity entity = e.getEntered();
 
                 if (entity instanceof Player) {
@@ -30,7 +30,7 @@ public class VehicleEvent implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public static void exit(VehicleExitEvent e) {
         if (!e.isCancelled()) {
-            CheckThread.run(() -> {
+            CheckThread.run(null, () -> {
                 Entity en = e.getExited();
 
                 if (en instanceof Player) {

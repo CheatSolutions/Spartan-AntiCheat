@@ -4,7 +4,6 @@ import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.inventory.InventoryMenu;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
 import ai.idealistic.spartan.api.Permission;
-import ai.idealistic.spartan.functionality.connection.PluginAddons;
 import ai.idealistic.spartan.functionality.server.PluginBase;
 import ai.idealistic.spartan.utils.minecraft.inventory.MaterialUtils;
 import org.bukkit.Material;
@@ -18,7 +17,7 @@ public class SynMenu extends InventoryMenu {
     public static final Permission[] permissions = new Permission[]{Permission.MANAGE, Permission.INFO};
 
     public SynMenu() {
-        super(PluginAddons.synName, 45, permissions);
+        super(Register.pluginName + " Syn", 45, permissions);
     }
 
     @Override

@@ -29,7 +29,7 @@ public class VehicleDeathEvent implements Listener {
                 for (Entity passenger : passengers) {
                     if (passenger instanceof Player) {
                         PlayerProtocol p = PluginBase.getProtocol((Player) passenger, true);
-                        CheckThread.run(() -> p.executeRunners(
+                        CheckThread.run(null, () -> p.executeRunners(
                                 false,
                                 new VehicleExitEvent(
                                         (Vehicle) entity,

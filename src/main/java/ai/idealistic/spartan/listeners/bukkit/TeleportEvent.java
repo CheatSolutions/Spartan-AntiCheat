@@ -14,7 +14,7 @@ public class TeleportEvent implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void Teleport(PlayerTeleportEvent e) {
-        CheckThread.run(() -> teleport(e.getPlayer(), false, e));
+        CheckThread.run(null, () -> teleport(e.getPlayer(), false, e));
     }
 
     public static void teleport(Player player, boolean packets, Object object) {
@@ -28,7 +28,7 @@ public class TeleportEvent implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void Respawn(PlayerRespawnEvent e) {
-        CheckThread.run(() -> respawn(e.getPlayer(), false, e));
+        CheckThread.run(null, () -> respawn(e.getPlayer(), false, e));
     }
 
     public static void respawn(Player player, boolean packets, Object object) {

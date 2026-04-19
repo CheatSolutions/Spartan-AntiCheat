@@ -3,7 +3,7 @@ package me.vagdedes.spartan.api;
 import ai.idealistic.spartan.abstraction.check.CheckEnums;
 import lombok.Getter;
 import lombok.Setter;
-import me.vagdedes.spartan.api.system.Enums;
+import me.vagdedes.spartan.system.Enums;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;

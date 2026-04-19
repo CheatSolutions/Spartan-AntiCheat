@@ -39,7 +39,7 @@ public class BlockPlaceBalancerListener extends PacketAdapter {
                 && protocol.isBedrockPlayer()) {
             return;
         }
-        CheckThread.run(() -> protocol.timerBalancer.addBalance(50));
+        CheckThread.run(protocol, () -> protocol.timerBalancer.addBalance(50));
     }
 
     private static PacketType[] resolvePacketTypes() {

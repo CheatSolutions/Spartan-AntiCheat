@@ -36,7 +36,7 @@ public class ClicksListener extends PacketAdapter {
             if (event.getPacket().getType().equals(PacketType.Play.Client.ARM_ANIMATION)) {
                 long delay = System.currentTimeMillis() - protocol.oldClickTime;
 
-                CheckThread.run(() -> {
+                CheckThread.run(protocol, () -> {
                     if (delay > 150) {
                         protocol.clickBlocker = false;
                     }
@@ -54,7 +54,7 @@ public class ClicksListener extends PacketAdapter {
             } else if (event.getPacket().getType().equals(PacketType.Play.Client.BLOCK_DIG)) {
                 String s = event.getPacket().getStructures().getValues().toString();
 
-                CheckThread.run(() -> {
+                CheckThread.run(protocol, () -> {
                     protocol.oldClickTime = System.currentTimeMillis();
                     protocol.clickBlocker = !s.contains("ABORT");
                 });

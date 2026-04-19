@@ -13,7 +13,7 @@ public class DeathEvent implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     private void Event(PlayerDeathEvent e) {
-        CheckThread.run(() -> event(e.getEntity(), false, e));
+        CheckThread.run(null, () -> event(e.getEntity(), false, e));
     }
 
     public static void event(Player player, boolean packets, Object object) {

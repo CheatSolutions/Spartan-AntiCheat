@@ -18,7 +18,7 @@ public class BowEvent implements Listener {
 
         if (entity instanceof Player) {
             PlayerProtocol p = PluginBase.getProtocol((Player) entity, true);
-            CheckThread.run(() -> p.executeRunners(e.isCancelled(), e));
+            CheckThread.run(null, () -> p.executeRunners(e.isCancelled(), e));
         }
     }
 

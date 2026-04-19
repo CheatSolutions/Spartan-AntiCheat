@@ -315,6 +315,7 @@ public abstract class CheckDetection extends CheckProcess {
                     "checks",
                     protocol.getUUID(),
                     protocol.bukkit().getName(),
+                    protocol.getPing(),
                     location.getBlockX(),
                     location.getBlockY(),
                     location.getBlockZ(),

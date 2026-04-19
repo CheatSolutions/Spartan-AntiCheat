@@ -2,7 +2,6 @@ package ai.idealistic.spartan.abstraction.configuration.implementation;
 
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.configuration.ConfigurationBuilder;
-import ai.idealistic.spartan.functionality.connection.PluginAddons;
 
 public class Messages extends ConfigurationBuilder {
 
@@ -82,7 +81,7 @@ public class Messages extends ConfigurationBuilder {
     public final String getColorfulString(String path) {
         String string = super.getColorfulString(path);
 
-        if (PluginAddons.isFreeEdition()
+        if (Register.isFreeEdition()
                 && !string.contains(prefix)) {
             string = "§4§l(" + prefix + ")§r " + string;
         }

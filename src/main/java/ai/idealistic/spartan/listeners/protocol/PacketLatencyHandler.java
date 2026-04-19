@@ -3,6 +3,7 @@ package ai.idealistic.spartan.listeners.protocol;
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.event.PlayerTransactionEvent;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.compatibility.necessary.protocollib.BackPlib;
 import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.MultiVersion;
 import ai.idealistic.spartan.functionality.server.PluginBase;
@@ -24,13 +25,13 @@ public class PacketLatencyHandler extends PacketAdapter {
                 (MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_17))
                         ? PacketType.Play.Client.PONG :
                         (MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_12))
-                                ? PacketType.Play.Client.TRANSACTION
-                                : PacketType.Play.Client.KEEP_ALIVE,
+                        ? PacketType.Play.Client.TRANSACTION
+                        : PacketType.Play.Client.KEEP_ALIVE,
                 (MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_17))
                         ? PacketType.Play.Server.PING :
                         (MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_12))
-                                ? PacketType.Play.Server.TRANSACTION
-                                : PacketType.Play.Server.KEEP_ALIVE
+                        ? PacketType.Play.Server.TRANSACTION
+                        : PacketType.Play.Server.KEEP_ALIVE
         );
     }
 
@@ -42,16 +43,16 @@ public class PacketLatencyHandler extends PacketAdapter {
         int id;
 
         if (!packet.getShorts().getFields().isEmpty()) {
-            id = packet.getShorts().read(0);
+            id = BackPlib.getSafeShort(packet, 0);
         } else if (!packet.getIntegers().getFields().isEmpty()) {
-            id = packet.getIntegers().read(0);
+            id = BackPlib.getSafeInt(packet, 0);
         } else if (!packet.getLongs().getFields().isEmpty()) {
-            id = Math.toIntExact(packet.getLongs().read(0));
+            id = Math.toIntExact(BackPlib.getSafeLong(packet, 0));
         } else {
             return;
         }
         if (id <= -1939 && id >= -1945) {
-            CheckThread.run(() -> {
+            CheckThread.run(protocol, () -> {
                 protocol.transactionPing = System.currentTimeMillis() - protocol.transactionTime;
                 protocol.transactionLastTime = System.currentTimeMillis();
                 protocol.transactionSentKeep = false;
@@ -70,7 +71,7 @@ public class PacketLatencyHandler extends PacketAdapter {
         Player player = event.getPlayer();
         PlayerProtocol protocol = PluginBase.getProtocol(player);
 
-        CheckThread.run(() -> {
+        CheckThread.run(protocol, () -> {
             protocol.transactionSentKeep = true;
             protocol.transactionTime = System.currentTimeMillis();
         });
@@ -88,8 +89,8 @@ public class PacketLatencyHandler extends PacketAdapter {
                 MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_17)
                         ? PacketType.Play.Server.PING :
                         (MultiVersion.isOrGreater(MultiVersion.MCVersion.V1_12))
-                                ? PacketType.Play.Server.TRANSACTION
-                                : PacketType.Play.Server.KEEP_ALIVE);
+                        ? PacketType.Play.Server.TRANSACTION
+                        : PacketType.Play.Server.KEEP_ALIVE);
 
         if (!packet.getShorts().getFields().isEmpty()) {
             packet.getShorts().write(0, id);

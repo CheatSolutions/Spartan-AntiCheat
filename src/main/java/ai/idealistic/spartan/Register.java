@@ -2,6 +2,7 @@ package ai.idealistic.spartan;
 
 import ai.idealistic.spartan.functionality.command.CommandExecution;
 import ai.idealistic.spartan.functionality.command.CommandTab;
+import ai.idealistic.spartan.functionality.connection.IDs;
 import ai.idealistic.spartan.functionality.connection.JarVerification;
 import ai.idealistic.spartan.functionality.moderation.AwarenessNotifications;
 import ai.idealistic.spartan.functionality.server.Config;
@@ -27,8 +28,14 @@ public class Register extends JavaPlugin {
     public static final String mainPackage = "ai.idealistic.spartan";
     public static final String pluginName = "Spartan";
     public static final String command = "spartan";
+    public static final String pluginURL = "https://spartan.top";
+    public static final String synCommand = Register.command + " syn";
 
     private static final Set<Class<?>> listeners = new LinkedHashSet<>(2);
+
+    public static boolean isFreeEdition() {
+        return !IDs.builtByBit && !IDs.polymart;
+    }
 
     public void onEnable() {
         plugin = this;

@@ -13,7 +13,7 @@ public class ChatEvent implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     private void Event(AsyncPlayerChatEvent e) {
         PlayerProtocol p = PluginBase.getProtocol(e.getPlayer());
-        CheckThread.run(() -> p.executeRunners(e.isCancelled(), e));
+        CheckThread.run(null, () -> p.executeRunners(e.isCancelled(), e));
     }
 
 }

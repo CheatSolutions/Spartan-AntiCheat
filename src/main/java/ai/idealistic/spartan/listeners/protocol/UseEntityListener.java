@@ -2,6 +2,8 @@ package ai.idealistic.spartan.listeners.protocol;
 
 import ai.idealistic.spartan.Register;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.compatibility.necessary.protocollib.BackPlib;
+import ai.idealistic.spartan.compatibility.necessary.protocollib.EntityUseActionPlib;
 import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.server.Config;
 import ai.idealistic.spartan.functionality.server.PluginBase;
@@ -32,13 +34,13 @@ public class UseEntityListener extends PacketAdapter {
             return;
         }
         PacketContainer packet = event.getPacket();
-        int entityId = packet.getIntegers().read(0);
+        int entityId = BackPlib.getSafeInt(packet, 0);
 
-        if ((!packet.getEntityUseActions().getValues().isEmpty())
-                ? !packet.getEntityUseActions().read(0).equals(EnumWrappers.EntityUseAction.ATTACK)
-                : !packet.getEnumEntityUseActions().read(0).getAction().equals(
+        if (packet.getEntityUseActions().size() > 0
+                ? !EntityUseActionPlib.getSafeEntityUseActions(packet, 0).equals(EnumWrappers.EntityUseAction.ATTACK)
+                : !EntityUseActionPlib.getSafeEnumEntityUseActions(packet, 0).getAction().equals(
                 EnumWrappers.EntityUseAction.ATTACK)) {
-            CheckThread.run(() -> {
+            CheckThread.run(protocol, () -> {
                 Entity t = null;
                 for (Entity entity : protocol.getNearbyEntities(5)) {
                     if (entity.getEntityId() == entityId) {

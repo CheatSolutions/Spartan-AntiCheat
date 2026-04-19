@@ -40,9 +40,9 @@ public class TeleportListener extends PacketAdapter {
         PacketType packetType = event.getPacket().getType();
 
         if (packetType.equals(PacketType.Play.Server.POSITION)) {
-            CheckThread.run(() -> TeleportEvent.teleport(player, true, event));
+            CheckThread.run(protocol, () -> TeleportEvent.teleport(player, true, event));
         } else if (packetType.equals(PacketType.Play.Server.RESPAWN)) {
-            CheckThread.run(() -> TeleportEvent.respawn(player, true, event));
+            CheckThread.run(protocol, () -> TeleportEvent.respawn(player, true, event));
         }
     }
 

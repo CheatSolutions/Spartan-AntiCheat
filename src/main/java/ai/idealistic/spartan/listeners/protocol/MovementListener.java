@@ -5,6 +5,7 @@ import ai.idealistic.spartan.abstraction.data.EnvironmentData;
 import ai.idealistic.spartan.abstraction.event.PlayerTickEvent;
 import ai.idealistic.spartan.abstraction.event.SuperPositionPacketEvent;
 import ai.idealistic.spartan.abstraction.protocol.PlayerProtocol;
+import ai.idealistic.spartan.compatibility.necessary.protocollib.BackPlib;
 import ai.idealistic.spartan.compatibility.necessary.protocollib.ProtocolLib;
 import ai.idealistic.spartan.functionality.concurrent.CheckThread;
 import ai.idealistic.spartan.functionality.moderation.AwarenessNotifications;
@@ -52,9 +53,9 @@ public class MovementListener extends PacketAdapter {
         if (tp == null) {
             return;
         }
-        if (!event.getPacket().getFloat().getValues().isEmpty()) {
-            tp.setYaw(event.getPacket().getFloat().read(0));
-            tp.setPitch(event.getPacket().getFloat().read(1));
+        if (event.getPacket().getFloat().size() > 0) {
+            tp.setYaw(BackPlib.getSafeFloat(event.getPacket(), 0));
+            tp.setPitch(BackPlib.getSafeFloat(event.getPacket(), 1));
         }
         Location loc = p.getLocation().clone();
         Location result = tp.clone();
@@ -83,7 +84,7 @@ public class MovementListener extends PacketAdapter {
                 && p.isBedrockPlayer()) {
             return;
         }
-        CheckThread.run(() -> {
+        CheckThread.run(p, () -> {
             Location l = p.getLocation();
             p.setFrom(l.clone());
             boolean onGround = ProtocolTools.onGroundPacketLevel(event);
@@ -93,34 +94,42 @@ public class MovementListener extends PacketAdapter {
             if (r == null) {
                 return;
             }
-
             Location c = ProtocolTools.readLocation(event);
 
             if (c == null) {
                 return;
             }
             if (ProtocolTools.hasRotation(event.getPacket().getType())) {
-                c.setYaw(event.getPacket().getFloat().read(0));
-                c.setPitch(event.getPacket().getFloat().read(1));
+                c.setYaw(BackPlib.getSafeFloat(event.getPacket(), 0));
+                c.setPitch(BackPlib.getSafeFloat(event.getPacket(), 1));
             }
             double[] v = new double[]{c.getX(), c.getY(), c.getZ(), c.getYaw(), c.getPitch()};
+
             for (Double check : v) {
-                if (check.isNaN() || check.isInfinite() || Math.abs(check) > 3E8) {
+                if (check.isNaN()
+                        || check.isInfinite()
+                        || Math.abs(check) > 3E8) {
                     PluginBase.getProtocol(player).punishments.kick(Bukkit.getConsoleSender(), "Invalid packet");
                     return;
                 }
             }
             boolean legacy = ProtocolTools.isFlying(event, l, r);
-            if (c.toVector().distance(p.getFrom().toVector()) > 1e-5 && !p.isTeleportTick()) {
+
+            if (c.toVector().distance(p.getFrom().toVector()) > 1e-5
+                    && !p.isTeleportTick()) {
                 PlayerTickEvent tickEvent = new PlayerTickEvent(p, legacy, onGround).build();
                 MovementEvent.tick(tickEvent);
+
                 if (tickEvent.getDelay() > 65) {
                     p.lagTick = tickEvent.getDelay();
                 } else if (tickEvent.getDelay() > 10 && p.lagTick != 0)
                     p.lagTick = 0;
 
-                if (p.isDesync() && tickEvent.getDelay() > 40 && tickEvent.getDelay() < 60) {
+                if (p.isDesync()
+                        && tickEvent.getDelay() > 40
+                        && tickEvent.getDelay() < 60) {
                     p.transactionVl += (p.isBlatantDesync() ? 2 : 1);
+
                     if (p.transactionVl > 40
                             && !p.isAFK()) {
                         AwarenessNotifications.optionallySend(player.getName()
@@ -135,7 +144,6 @@ public class MovementListener extends PacketAdapter {
                     p.transactionVl -= 2;
                 }
             }
-
             if (p.transactionBoot) {
                 PacketLatencyHandler.startChecking(p);
             }
@@ -146,6 +154,7 @@ public class MovementListener extends PacketAdapter {
             if (!legacy) {
                 boolean hasPosition = ProtocolTools.hasPosition(packet.getType());
                 boolean hasRotation = ProtocolTools.hasRotation(packet.getType());
+
                 if (hasPosition) {
                     p.addRawLocation(r);
                 }
@@ -158,15 +167,19 @@ public class MovementListener extends PacketAdapter {
 
                         if (to != null) { // From
                             // Let's check guys with bad internet
-                            if (to.getX() == r.getX() && to.getY() == r.getY() && to.getZ() == r.getZ()) {
+                            if (to.getX() == r.getX()
+                                    && to.getY() == r.getY()
+                                    && to.getZ() == r.getZ()) {
                                 p.setLocation(to.clone());
                                 p.setFrom(to.clone());
                                 p.setTeleport(null);
                             } else {
                                 if (false) return; // todo vehicle enter
-                                for (Entity entity : p.getNearbyEntities(5))
-                                    if (entity instanceof Boat) return;
-
+                                for (Entity entity : p.getNearbyEntities(5)) {
+                                    if (entity instanceof Boat) {
+                                        return;
+                                    }
+                                }
                                 // Force packet stop if your packet are shit
                                 event.setCancelled(true);
                                 PluginBase.runTask(p, () -> {
@@ -188,8 +201,8 @@ public class MovementListener extends PacketAdapter {
                         }
                     }
                     if (hasRotation) {
-                        l.setYaw(packet.getFloat().read(0));
-                        l.setPitch(packet.getFloat().read(1));
+                        l.setYaw(BackPlib.getSafeFloat(packet, 0));
+                        l.setPitch(BackPlib.getSafeFloat(packet, 1));
                     }
                 }
                 if (p.useItemPacket) {
@@ -213,7 +226,7 @@ public class MovementListener extends PacketAdapter {
                         p.getLocation()
                 );
                 moveEvent.setCancelled(event.isCancelled());
-                p.setEnvironment(new EnvironmentData(p));
+                PluginBase.runTask(p, () -> p.setEnvironment(new EnvironmentData(p)));
                 MovementEvent.event(moveEvent, true);
 
                 if (p.flyingTicks > 0) {
@@ -232,4 +245,5 @@ public class MovementListener extends PacketAdapter {
     public enum tpFlags {
         X, Y, Z, Y_ROT, X_ROT
     }
+
 }
